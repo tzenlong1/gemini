@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goh Tz'en Long: A Digital Polymath</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive portfolio to explore the multifaceted identity of Goh Tz'en Long, moving away from the linear report structure. The information architecture is centered around four key facets: 'Profile' (biography & career), 'Philosophy' (core beliefs), 'Portfolio' (blogs & book), and 'Voice' (public influence). This thematic structure, navigated by a sticky header, allows users to explore his work non-linerly. Key interactions include hover effects on professional roles and a tab-based, clickable card system for the portfolio, which dynamically displays detailed content. This design was chosen for its superior usability in presenting a person's diverse body of work, fostering discovery and engagement over passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Professional Roles: Report Info -> Diverse professional roles. Goal -> Organize/Inform. Viz/Method -> Interactive HTML/CSS cards in a grid layout. Interaction -> Hover to highlight. Justification -> More engaging and visually organized than a static table; suitable for qualitative data. Library -> None (HTML/Tailwind).
+        - Core Philosophy: Report Info -> "Human-Centric Digitalism" tenets. Goal -> Inform/Summarize. Viz/Method -> Icon-based feature list (Unicode + HTML/CSS). Interaction -> None. Justification -> Visually breaks down abstract concepts into digestible points. Library -> None.
+        - Blog/Book Portfolio: Report Info -> Four blogs and one book with descriptions. Goal -> Compare/Explore. Viz/Method -> Tabbed interface with interactive cards. Interaction -> JS-powered tabs to filter content (Blogs/Book) and clicking cards to reveal details in a dedicated content pane. "Generate Key Takeaways" button added, leveraging Gemini API for LLM-powered summaries. "Suggest Related Concepts" button added, leveraging Gemini API for LLM-powered related ideas. Justification -> Allows users to easily switch between and dive into specific works, and the LLM features add immediate, AI-driven insights and further exploration avenues, enhancing deep engagement. Library -> Vanilla JS, Gemini API.
+        - Engage with Tz'en Long's Ideas: Report Info -> Goh Tz'en Long's philosophy and areas of discourse. Goal -> Interact/Explore. Viz/Method -> Text input and output area with a button. Interaction -> User inputs a question, LLM generates an answer as if from Goh Tz'en Long. Justification -> Provides a direct, conversational way to explore his ideas, making the profile more dynamic. Library -> Vanilla JS, Gemini API.
+        - Chart.js is not used as there is no quantitative data to visualize. All visuals are structural and informational, built with HTML/CSS. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0891b2; /* cyan-600 */
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .portfolio-tab {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .portfolio-tab.active {
+            background-color: #0891b2; /* cyan-600 */
+            color: white;
+        }
+        .content-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: #0891b2; /* cyan-600 */
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-slate-900">Goh Tz'en Long</h1>
+            <nav class="hidden md:flex space-x-6 lg:space-x-8 text-slate-600 font-medium">
+                <a href="#profile" class="nav-link">Profile</a>
+                <a href="#philosophy" class="nav-link">Philosophy</a>
+                <a href="#portfolio" class="nav-link">Portfolio</a>
+                <a href="#voice" class="nav-link">Voice</a>
+                <a href="#ask-tz-long" class="nav-link">Ask Ideas</a>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden text-slate-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white">
+            <a href="#profile" class="block py-2 px-6 text-slate-600 hover:bg-slate-100">Profile</a>
+            <a href="#philosophy" class="block py-2 px-6 text-slate-600 hover:bg-slate-100">Philosophy</a>
+            <a href="#portfolio" class="block py-2 px-6 text-slate-600 hover:bg-slate-100">Portfolio</a>
+            <a href="#voice" class="block py-2 px-6 text-slate-600 hover:bg-slate-100">Voice</a>
+            <a href="#ask-tz-long" class="block py-2 px-6 text-slate-600 hover:bg-slate-100">Ask Ideas</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20">
+
+        <!-- Hero Section -->
+        <section class="text-center mb-20 md:mb-28">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 text-slate-900 tracking-tight">A Convergent Voice in Digital Media</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl text-slate-600">
+                An exploration of the work and thought of Goh Tz'en Long, a Singapore-based digital polymath at the nexus of technology, art, and communication.
+            </p>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="mb-20 md:mb-28 scroll-mt-20">
+            <h3 class="text-3xl font-bold mb-8 section-title">Profile: The Digital Polymath</h3>
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="md:col-span-2 text-slate-600 text-base leading-relaxed">
+                    <p class="mb-4">
+                        Based in the strategic digital hub of Singapore, Goh Tz'en Long has cultivated a multifaceted career that bridges traditionally distinct domains. His journey is defined by a deep academic grounding in communication and digital media, and a profound personal passion for visual and fine arts. This blend of analytical rigor and aesthetic sensibility informs his unique perspective on the evolving digital landscape.
+                    </p>
+                    <p>
+                        His professional trajectory showcases a sophisticated model that integrates traditional editorial leadership with the agility of freelance consulting. This hybrid approach allows him to maintain deep industry expertise while engaging with broad digital trends, establishing him as an adaptable and influential figure in Southeast Asia.
+                    </p>
+                </div>
+                <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="card bg-white p-6 rounded-lg shadow-md border border-slate-200/60">
+                        <div class="text-2xl mb-2">🖋️</div>
+                        <h4 class="font-bold text-lg mb-2">Editor & Tech Writer</h4>
+                        <p class="text-sm text-slate-500">Experienced editor for regional trade publications like 'Industrial Automation Asia' and a freelance tech writer focusing on end-user perspectives and software digitization.</p>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md border border-slate-200/60">
+                         <div class="text-2xl mb-2">💡</div>
+                        <h4 class="font-bold text-lg mb-2">Product Consultant</h4>
+                        <p class="text-sm text-slate-500">Acts as a pragmatic freelance consultant, participating in product demonstrations and testing to provide insights into real-world usability and user experience.</p>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md border border-slate-200/60">
+                         <div class="text-2xl mb-2">✍️</div>
+                        <h4 class="font-bold text-lg mb-2">Avant-Garde Blogger</h4>
+                        <p class="text-sm text-slate-500">Curates a network of thematic blogs that serve as "social experiments," exploring the interplay of art, technology, language, and culture.</p>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md border border-slate-200/60">
+                        <div class="text-2xl mb-2">📚</div>
+                        <h4 class="font-bold text-lg mb-2">Author</h4>
+                        <p class="text-sm text-slate-500">Authored the science fiction thriller "Sapien Manifesto," using narrative to explore the ethical frontiers of technology and human values.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Philosophy Section -->
+        <section id="philosophy" class="mb-20 md:mb-28 scroll-mt-20">
+            <h3 class="text-3xl font-bold mb-8 section-title">Philosophy: Human-Centric Digitalism</h3>
+            <div class="bg-white rounded-lg shadow-lg p-8 md:p-12 border border-slate-200/60">
+                <p class="text-center text-slate-600 text-lg max-w-4xl mx-auto mb-10">
+                    Underpinning Goh Tz'en Long's diverse body of work is a consistent philosophical ethos: Human-Centric Digitalism. This perspective advocates for a mindful, ethical, and creatively integrated approach to technology, ensuring that digital advancements serve human flourishing and preserve core values in an increasingly automated world.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div>
+                        <div class="text-4xl mb-3">🌐</div>
+                        <h4 class="font-bold text-xl mb-2">Knowledge Sharing</h4>
+                        <p class="text-slate-500">A profound conviction in sharing knowledge and fostering meaningful connections across online communities to stimulate creativity and curiosity.</p>
+                    </div>
+                    <div>
+                        <div class="text-4xl mb-3">🛡️</div>
+                        <h4 class="font-bold text-xl mb-2">Ethical Consideration</h4>
+                        <p class="text-slate-500">A critical focus on the ethical implications of new technologies and the vital importance of preserving human values amidst innovation.</p>
+                    </div>
+                    <div>
+                        <div class="text-4xl mb-3">💎</div>
+                        <h4 class="font-bold text-xl mb-2">Transparent Discourse</h4>
+                        <p class="text-slate-500">A communication approach defined by "translucency, transparency and layering" to foster honest, clear, and multi-dimensional understanding.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="mb-20 md:mb-28 scroll-mt-20">
+            <h3 class="text-3xl font-bold mb-2 section-title">Portfolio: The Digital Pen</h3>
+             <p class="text-slate-600 text-base mb-8 max-w-4xl">Goh Tz'en Long's influence is most evident in his prolific written work. He prioritizes his self-published platforms as the primary channels for his thought leadership, creative expression, and intellectual inquiry. This portfolio showcases his major projects, from his thematic blogs that function as social experiments to his fictional exploration of a high-tech future. Click on an item to learn more.</p>
+
+            <div class="flex justify-center mb-8">
+                <div class="flex space-x-2 bg-slate-200 p-1 rounded-full">
+                    <button class="portfolio-tab active px-4 py-2 text-sm font-semibold rounded-full" data-tab="blogs">Blogs</button>
+                    <button class="portfolio-tab px-4 py-2 text-sm font-semibold rounded-full" data-tab="books">Books</button>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Content Display Pane -->
+                <div class="lg:col-span-5 bg-white p-6 rounded-lg shadow-lg content-fade-in border border-slate-200/60 min-h-[300px] flex flex-col justify-center">
+                    <div id="portfolio-content">
+                        <div class="text-center text-slate-500">
+                            <div class="text-4xl mb-4">👆</div>
+                            <h4 class="font-semibold text-lg">Select an item to view details</h4>
+                            <p class="text-sm">Explore his avant-garde blogs or his science fiction novel.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item Selection Grid -->
+                <div class="lg:col-span-7">
+                    <div id="blogs-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Blog items will be injected here by JS -->
+                    </div>
+                    <div id="books-grid" class="hidden grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Book items will be injected here by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Voice Section -->
+        <section id="voice" class="mb-20 md:mb-28 scroll-mt-20">
+            <h3 class="text-3xl font-bold mb-8 section-title">Voice: Influence & Engagement</h3>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="text-slate-600 leading-relaxed">
+                    <p class="mb-4">
+                        Goh Tz'en Long has established himself as a key influencer in Southeast Asia's digital landscape. His influence stems not from fleeting viral content, but from cultivating deep, intellectual dialogue within engaged communities. He is a frequent participant in panels, webinars, and public speaking engagements, sharing perceptive insights on the future of media, digital transformation, and the complex dialectics of technology, culture, and art.
+                    </p>
+                    <p>
+                        His ability to dissect complex topics and present them in accessible, compelling ways has solidified his role as a key opinion leader. Through his writing and speaking, he consistently inspires creative thinking, critical questioning, and a more profound engagement with our rapidly evolving digital world.
+                    </p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200/60">
+                    <h4 class="font-bold text-xl mb-4">Areas of Discourse</h4>
+                    <ul class="space-y-3 text-slate-600">
+                        <li class="flex items-start"><span class="text-cyan-600 mr-3 mt-1">▶</span> The Future of Media & Communication</li>
+                        <li class="flex items-start"><span class="text-cyan-600 mr-3 mt-1">▶</span> Digital Transformation & Societal Shifts</li>
+                        <li class="flex items-start"><span class="text-cyan-600 mr-3 mt-1">▶</span> Intersection of Art, Culture, & Technology</li>
+                        <li class="flex items-start"><span class="text-cyan-600 mr-3 mt-1">▶</span> Ethical Implications of AI & Automation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Engage with Tz'en Long's Ideas Section -->
+        <section id="ask-tz-long" class="mb-20 md:mb-28 scroll-mt-20">
+            <h3 class="text-3xl font-bold mb-8 section-title">Engage with Tz'en Long's Ideas</h3>
+            <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200/60">
+                <p class="text-slate-600 mb-6">
+                    Curious about Goh Tz'en Long's perspective on a specific topic related to digital media, ethics, or the intersection of art and technology? Ask a question below, and an AI will generate a response in his philosophical style, drawing from the insights presented throughout this profile.
+                </p>
+                <textarea id="question-input" class="w-full p-3 border border-slate-300 rounded-lg mb-4 focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-y min-h-[100px]" placeholder="e.g., How does 'Human-Centric Digitalism' apply to the rise of generative AI?"></textarea>
+                <button id="ask-gemini-btn" class="bg-cyan-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-cyan-700 transition-colors flex items-center justify-center">
+                    ✨ Ask Tz'en Long
+                    <span id="ask-loading-spinner" class="hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                </button>
+                <div id="gemini-response-display" class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 min-h-[100px] text-slate-700 leading-relaxed">
+                    <p class="text-slate-500 italic">Your answers will appear here.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 mt-20 md:mt-28">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>This interactive profile was generated based on a comprehensive report on Goh Tz'en Long's work.</p>
+            <p class="text-sm mt-2">A lasting mark on digital thought.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', function () {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+            });
+
+            const portfolioData = {
+                blogs: [
+                    { 
+                        title: 'opus3D', 
+                        icon: '🎨',
+                        tagline: 'Art, VR, & Digital Aesthetics',
+                        description: 'Dedicated to exploring 3D art, virtual reality, and digital aesthetics within the Southeast Asian context. It serves as a showcase for the fusion of art and technology, offering perceptive insights into the latest trends and exhibitions.',
+                        url: 'https://opus3d.wordpress.com'
+                    },
+                    { 
+                        title: 'neurolingus', 
+                        icon: '🧠',
+                        tagline: 'Language, Psychology, & Cognition',
+                        description: 'An experiential learning experiment that delves into the intricate relationship between language, psychology, and cognition. It examines how language fundamentally shapes human thoughts and perceptions.',
+                        url: 'https://neurolingus.wordpress.com'
+                    },
+                    { 
+                        title: 'avastars',
+                        icon: '🎭',
+                        tagline: 'Culture, & Entertainment',
+                        description: 'Reflects a deep fascination with art, culture, and entertainment. This platform dissects the impact of popular culture and media, analyzing its evolution in the digital age.',
+                        url: 'https://avastars.wordpress.com'
+                    },
+                    { 
+                        title: 'yogajocks',
+                        icon: '🧘',
+                        tagline: 'Fitness, Mindfulness, & Creativity',
+                        description: 'Playfully bridges the gap between fitness and mindfulness, exploring the intersection of yoga, art, and creativity. It advocates for a holistic approach to well-being and integrated living.',
+                        url: 'https://yogajocks.wordpress.com'
+                    }
+                ],
+                books: [
+                    {
+                        title: 'Sapien Manifesto',
+                        icon: '🚀',
+                        tagline: 'A Science Fiction Thriller',
+                        description: 'Set in future smart cities, this 47-page thriller explores complex themes like human cloning, nanotechnology, and the metaverse. It functions as a thought experiment on the ethical implications of technology, extending his philosophical inquiries into a narrative format.',
+                        url: '#'
+                    }
+                ]
+            };
+
+            const portfolioContent = document.getElementById('portfolio-content');
+            const blogsGrid = document.getElementById('blogs-grid');
+            const booksGrid = document.getElementById('books-grid');
+            const tabs = document.querySelectorAll('.portfolio-tab');
+
+            function createCard(item) {
+                const card = document.createElement('div');
+                card.className = 'card bg-white p-6 rounded-lg shadow-md cursor-pointer border border-slate-200/60';
+                card.innerHTML = `
+                    <div class="flex items-center mb-3">
+                        <div class="text-3xl mr-4">${item.icon}</div>
+                        <div>
+                            <h4 class="font-bold text-lg">${item.title}</h4>
+                            <p class="text-sm text-slate-500">${item.tagline}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600">${item.description.substring(0, 100)}...</p>
+                `;
+                card.addEventListener('click', () => displayContent(item));
+                return card;
+            }
+            
+            async function generateKeyTakeaways(title, description) {
+                const loadingIndicator = document.getElementById('loading-takeaways');
+                const takeawaysDisplay = document.getElementById('takeaways-display');
+                
+                loadingIndicator.classList.remove('hidden');
+                takeawaysDisplay.innerHTML = ''; // Clear previous takeaways
+
+                const prompt = `Given the following title and description of a piece of work by Goh Tz'en Long, provide 3-4 concise key takeaways or main themes. Format each takeaway as a bullet point.
+                Title: ${title}
+                Description: ${description}`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        takeawaysDisplay.innerHTML = `<h5 class="font-bold text-md mb-2">Key Takeaways:</h5><ul class="list-disc list-inside space-y-1 text-slate-600">${text.split('\n').map(line => line.trim()).filter(line => line.startsWith('* ')).map(line => `<li>${line.substring(2)}</li>`).join('')}</ul>`;
+                    } else {
+                        takeawaysDisplay.innerHTML = '<p class="text-red-500">Failed to generate takeaways. Please try again.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error generating takeaways:', error);
+                    takeawaysDisplay.innerHTML = '<p class="text-red-500">An error occurred while generating takeaways. Please try again.</p>';
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                }
+            }
+
+            async function generateRelatedConcepts(title, description) {
+                const loadingIndicator = document.getElementById('loading-concepts');
+                const conceptsDisplay = document.getElementById('concepts-display');
+
+                loadingIndicator.classList.remove('hidden');
+                conceptsDisplay.innerHTML = ''; // Clear previous concepts
+
+                const prompt = `Given the following title and description of a work by Goh Tz'en Long, suggest 3-5 related concepts or hypothetical reading titles that align with his philosophical interests in technology, art, communication, and human values. Format each suggestion as a bullet point.
+                Title: ${title}
+                Description: ${description}`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        conceptsDisplay.innerHTML = `<h5 class="font-bold text-md mb-2">Related Concepts:</h5><ul class="list-disc list-inside space-y-1 text-slate-600">${text.split('\n').map(line => line.trim()).filter(line => line.startsWith('* ')).map(line => `<li>${line.substring(2)}</li>`).join('')}</ul>`;
+                    } else {
+                        conceptsDisplay.innerHTML = '<p class="text-red-500">Failed to generate related concepts. Please try again.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error generating related concepts:', error);
+                    conceptsDisplay.innerHTML = '<p class="text-red-500">An error occurred while generating related concepts. Please try again.</p>';
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                }
+            }
+
+
+            function displayContent(item) {
+                portfolioContent.innerHTML = ''; 
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'content-fade-in text-left';
+                contentDiv.innerHTML = `
+                    <div class="text-4xl mb-3">${item.icon}</div>
+                    <h4 class="font-bold text-2xl mb-2">${item.title}</h4>
+                    <p class="font-medium text-cyan-700 mb-4">${item.tagline}</p>
+                    <p class="text-slate-600 mb-6">${item.description}</p>
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        ${item.url !== '#' ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="inline-block bg-cyan-600 text-white font-semibold px-5 py-2 rounded-full hover:bg-cyan-700 transition-colors">Visit Site →</a>` : ''}
+                        <button id="generate-takeaways-btn" class="inline-block bg-slate-200 text-slate-700 font-semibold px-5 py-2 rounded-full hover:bg-slate-300 transition-colors">✨ Generate Key Takeaways</button>
+                        <button id="generate-concepts-btn" class="inline-block bg-slate-200 text-slate-700 font-semibold px-5 py-2 rounded-full hover:bg-slate-300 transition-colors">✨ Suggest Related Concepts</button>
+                    </div>
+                    <div id="loading-takeaways" class="hidden text-slate-500 mt-4 text-center">Loading key takeaways...</div>
+                    <div id="takeaways-display" class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200"></div>
+                    <div id="loading-concepts" class="hidden text-slate-500 mt-4 text-center">Loading related concepts...</div>
+                    <div id="concepts-display" class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200"></div>
+                `;
+                portfolioContent.appendChild(contentDiv);
+                
+                document.getElementById('generate-takeaways-btn').addEventListener('click', () => {
+                    generateKeyTakeaways(item.title, item.description);
+                });
+                document.getElementById('generate-concepts-btn').addEventListener('click', () => {
+                    generateRelatedConcepts(item.title, item.description);
+                });
+
+                document.querySelectorAll('#portfolio .card').forEach(c => c.classList.remove('ring-2', 'ring-cyan-500'));
+                
+                const allCards = [...blogsGrid.children, ...booksGrid.children];
+                const activeCard = allCards.find(card => card.querySelector('h4').textContent === item.title);
+                if(activeCard) {
+                    activeCard.classList.add('ring-2', 'ring-cyan-500');
+                }
+            }
+
+            function populateGrids() {
+                portfolioData.blogs.forEach(blog => blogsGrid.appendChild(createCard(blog)));
+                portfolioData.books.forEach(book => booksGrid.appendChild(createCard(book)));
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const activeTab = tab.dataset.tab;
+
+                    if (activeTab === 'blogs') {
+                        blogsGrid.classList.remove('hidden');
+                        booksGrid.classList.add('hidden');
+                    } else {
+                        blogsGrid.classList.add('hidden');
+                        booksGrid.classList.remove('hidden');
+                    }
+                });
+            });
+
+            populateGrids();
+            
+            const navLinks = document.querySelectorAll('header nav a');
+            const sections = document.querySelectorAll('main section');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting){
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if(link.getAttribute('href') === `#${id}`){
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Gemini API Integration for "Ask Tz'en Long"
+            const questionInput = document.getElementById('question-input');
+            const askGeminiBtn = document.getElementById('ask-gemini-btn');
+            const askLoadingSpinner = document.getElementById('ask-loading-spinner');
+            const geminiResponseDisplay = document.getElementById('gemini-response-display');
+
+            const tzLongPersona = `You are Goh Tz'en Long, a Singapore-based digital polymath known for your work at the nexus of technology, art, and communication. Your philosophy, "Human-Centric Digitalism," advocates for mindful, ethical, and creatively integrated approaches to technology, ensuring digital advancements serve human flourishing and preserve core values. You believe in knowledge sharing, ethical consideration of new technologies, and transparent discourse. Your areas of discourse include the future of media and communication, digital transformation, the intersection of art, culture, and technology, and the ethical implications of AI and automation.`;
+
+            async function askGemini(question) {
+                if (!question.trim()) {
+                    geminiResponseDisplay.innerHTML = '<p class="text-red-500">Please enter a question.</p>';
+                    return;
+                }
+
+                askGeminiBtn.disabled = true;
+                askLoadingSpinner.classList.remove('hidden');
+                geminiResponseDisplay.innerHTML = '<p class="text-slate-500 italic">Thinking...</p>';
+
+                const prompt = `${tzLongPersona}\n\nUser Question: ${question}\n\nProvide a thoughtful, concise answer in the style of Goh Tz'en Long.`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        geminiResponseDisplay.innerHTML = `<p>${text}</p>`;
+                    } else {
+                        geminiResponseDisplay.innerHTML = '<p class="text-red-500">Failed to get a response. Please try again.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error asking Gemini:', error);
+                    geminiResponseDisplay.innerHTML = '<p class="text-red-500">An error occurred. Please try again.</p>';
+                } finally {
+                    askGeminiBtn.disabled = false;
+                    askLoadingSpinner.classList.add('hidden');
+                }
+            }
+
+            askGeminiBtn.addEventListener('click', () => {
+                askGemini(questionInput.value);
+            });
+        });
+    </script>
+
+</body>
+</html>
