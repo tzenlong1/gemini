@@ -9,7 +9,484 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    ...
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A thematic, single-page dashboard structure is used to provide a non-linear, exploratory experience. It begins with a high-level "Market Snapshot" for immediate context. The "Key Players" section uses interactive cards to reveal details on demand, keeping the UI clean. The core is the "Market Deep Dive" section, using a tabbed/button-based navigation to switch between different data views (Technology, Industry, Region), preventing information overload and allowing users to focus on what interests them. It concludes with "Future Trends" to provide forward-looking insights. This structure guides the user from a broad overview to specific details and future outlooks logically, prioritizing user-driven exploration over a rigid, report-like format. -->
+    <!-- Visualization & Content Choices: 
+        - Market Snapshot (Market Size, CAGR): Goal=Inform. Method=Key Performance Indicator (KPI) cards (HTML/Tailwind) for quick visual impact. Interaction=None. Justification=Presents the most critical top-line numbers immediately.
+        - Key Players: Goal=Organize/Inform. Method=Interactive grid of cards (HTML/Tailwind). Interaction=Click-to-reveal details. Justification=Allows for a clean overview of market leaders while providing access to deeper information without navigating away.
+        - Technology Breakdown: Goal=Compare Proportions. Method=Donut Chart (Chart.js/Canvas). Interaction=Clicking a segment updates a descriptive text block. Justification=Ideal for showing part-to-whole relationships. Linking it to a text block creates a rich, connected interaction.
+        - Industry Adoption: Goal=Compare/Rank. Method=Horizontal Bar Chart (Chart.js/Canvas). Interaction=Tooltips on hover. Justification=Effectively compares adoption levels across different categories. Horizontal format is good for long labels.
+        - Regional Analysis: Goal=Compare. Method=Vertical Bar Chart (Chart.js/Canvas). Interaction=Tooltips on hover. Justification=Standard and effective for comparing magnitude across geographical regions.
+        - Future Trends: Goal=Inform. Method=Styled cards with icons (Unicode/HTML/Tailwind). Interaction=Hover effects. Justification=Visually breaks down complex trends into digestible, thematic chunks.
+        - Library/Method: Chart.js for all charts due to its simplicity, responsiveness, and canvas-based rendering. All other visuals are built with HTML and Tailwind CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F5F2; /* Warm Neutral Background */
+            color: #3C3633; /* Dark Neutral Text */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 24rem; /* 384px */
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 28rem; /* 448px */
+            }
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: #E07A5F; /* Accent Color */
+        }
+        .kpi-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .player-card {
+            background-color: white;
+            border: 1px solid #E5E7EB;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .player-card.active {
+            border-color: #607D8B;
+            transform: scale(1.03);
+            box-shadow: 0 8px 25px -5px rgba(96, 125, 139, 0.3);
+        }
+        .player-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .player-card.active .player-details {
+            max-height: 500px;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .filter-btn {
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .filter-btn.active {
+            background-color: #607D8B; /* Primary Accent */
+            color: white;
+            border-color: #607D8B;
+        }
+        .filter-btn:not(.active):hover {
+            background-color: #CFD8DC;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-gray-800">APAC Automation Explorer</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#snapshot" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Snapshot</a>
+                        <a href="#players" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Key Players</a>
+                        <a href="#deep-dive" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Deep Dive</a>
+                        <a href="#trends" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Future Trends</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Section 1: Market Snapshot -->
+        <section id="snapshot" class="mb-16 md:mb-24 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4">The Industrial Automation Pulse</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-12">
+                A high-level overview of the Asia-Pacific industrial automation market. This section provides the key financial metrics that define the industry's current scale and future potential, driven by the adoption of Industry 4.0 and strong regional industrial growth.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div class="kpi-card">
+                    <h3 class="text-lg font-medium text-gray-500 mb-2">Market Size (2025 Est.)</h3>
+                    <p class="text-5xl font-bold text-[#607D8B]">$82.4B</p>
+                    <p class="text-sm text-gray-500 mt-2">A substantial market indicating widespread adoption.</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="text-lg font-medium text-gray-500 mb-2">Projected CAGR (2025-2030)</h3>
+                    <p class="text-5xl font-bold text-[#607D8B]">~8.8%</p>
+                    <p class="text-sm text-gray-500 mt-2">Robust growth fueled by technological advancements.</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="text-lg font-medium text-gray-500 mb-2">Projected Market Size (2030)</h3>
+                    <p class="text-5xl font-bold text-[#607D8B]">$125.8B</p>
+                    <p class="text-sm text-gray-500 mt-2">Signifying strong, sustained investment in automation.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Key Players -->
+        <section id="players" class="mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Market Leaders & Innovators</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">
+                The APAC automation landscape is shaped by a mix of global giants and strong regional players. These companies are the primary "editors" of the industry's direction. Click on any company to learn more about their focus and contributions to the automation ecosystem.
+            </p>
+            <div id="players-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Player cards will be injected by JS -->
+            </div>
+        </section>
+
+
+        <!-- Section 3: Market Deep Dive -->
+        <section id="deep-dive" class="mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Interactive Market Deep Dive</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">
+                Explore the market from multiple dimensions. Use the filters below to dynamically change the visualization and uncover insights into the technologies, industries, and countries driving the automation revolution in the Asia-Pacific region.
+            </p>
+            <div class="flex justify-center flex-wrap gap-3 mb-8">
+                <button data-view="tech" class="filter-btn active font-medium py-2 px-5 rounded-full bg-gray-200">By Technology</button>
+                <button data-view="industry" class="filter-btn font-medium py-2 px-5 rounded-full bg-gray-200">By Industry</button>
+                <button data-view="region" class="filter-btn font-medium py-2 px-5 rounded-full bg-gray-200">By Region</button>
+            </div>
+
+            <div id="charts-container" class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div id="tech-view">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <div class="lg:w-1/2">
+                            <h3 class="text-xl font-semibold text-center mb-4">Core Technology Market Share</h3>
+                             <div class="chart-container mx-auto">
+                                <canvas id="techDonutChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="tech-description-container" class="lg:w-1/2 flex items-center justify-center p-4 bg-[#F8F5F2] rounded-lg">
+                             <div class="text-center">
+                                <h4 id="tech-title" class="text-2xl font-bold text-[#607D8B] mb-2">Click a Segment</h4>
+                                <p id="tech-text" class="text-gray-600">Select a technology from the chart to see its description and role in the automation ecosystem.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="industry-view" class="hidden">
+                    <h3 class="text-xl font-semibold text-center mb-4">Automation Adoption by End-User Industry</h3>
+                    <div class="chart-container mx-auto max-w-4xl">
+                        <canvas id="industryBarChart"></canvas>
+                    </div>
+                </div>
+                <div id="region-view" class="hidden">
+                    <h3 class="text-xl font-semibold text-center mb-4">Market Size Analysis by Key Country/Region</h3>
+                    <div class="chart-container mx-auto max-w-4xl">
+                        <canvas id="regionBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Future Trends -->
+        <section id="trends" class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Shaping the Future: Key Trends</h2>
+             <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">
+                The future of industrial automation is intelligent, connected, and collaborative. The following trends represent the most significant technological shifts that will redefine manufacturing, logistics, and operational efficiency across APAC in the coming years.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="kpi-card p-6">
+                    <div class="text-3xl mb-4 text-[#E07A5F]">🧠</div>
+                    <h3 class="text-xl font-semibold mb-2">AI & Machine Learning</h3>
+                    <p class="text-gray-600">Driving predictive maintenance, quality control optimization, and adaptive manufacturing processes to create truly "smart" factories.</p>
+                </div>
+                <div class="kpi-card p-6">
+                    <div class="text-3xl mb-4 text-[#E07A5F]">🤖</div>
+                    <h3 class="text-xl font-semibold mb-2">Collaborative Robots (Cobots)</h3>
+                    <p class="text-gray-600">Enabling safe human-robot collaboration, enhancing productivity in complex assembly tasks and making automation accessible for SMEs.</p>
+                </div>
+                <div class="kpi-card p-6">
+                    <div class="text-3xl mb-4 text-[#E07A5F]">🔗</div>
+                    <h3 class="text-xl font-semibold mb-2">Industrial IoT (IIoT)</h3>
+                    <p class="text-gray-600">Connecting machines, sensors, and systems to provide real-time data streams for unprecedented operational visibility and control.</p>
+                </div>
+                 <div class="kpi-card p-6">
+                    <div class="text-3xl mb-4 text-[#E07A5F]">Twins</div>
+                    <h3 class="text-xl font-semibold mb-2">Digital Twins</h3>
+                    <p class="text-gray-600">Creating virtual replicas of physical assets and processes for simulation, analysis, and optimization before implementation in the real world.</p>
+                </div>
+                 <div class="kpi-card p-6">
+                    <div class="text-3xl mb-4 text-[#E07A5F]">💻</div>
+                    <h3 class="text-xl font-semibold mb-2">Edge Computing</h3>
+                    <p class="text-gray-600">Processing data closer to the source, reducing latency for time-critical decisions and enabling faster responses on the factory floor.</p>
+                </div>
+                 <div class="kpi-card p-6">
+                    <div class="text-3xl mb-4 text-[#E07A5F]">🛡️</div>
+                    <h3 class="text-xl font-semibold mb-2">Cybersecurity</h3>
+                    <p class="text-gray-600">As systems become more connected, robust cybersecurity measures are becoming critical to protect sensitive operational data and ensure plant safety.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center">
+            <p>APAC Industrial Automation Explorer | Interactive Data Application</p>
+        </div>
+    </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const appData = {
+        players: [
+            { name: 'Siemens', country: 'Germany', details: 'A dominant force with a comprehensive "Digital Enterprise" portfolio covering PLM, MES, and automation hardware. Strong focus on integrating the entire value chain in APAC.' },
+            { name: 'ABB', country: 'Switzerland/Sweden', details: 'Leader in robotics, electrification, and process automation. Their ABB Ability™ platform is a key offering for digital solutions in the region.' },
+            { name: 'Rockwell Automation', country: 'USA', details: 'Specializes in industrial automation and information, with its "Connected Enterprise" vision. Strong presence in manufacturing and resource industries across APAC.' },
+            { name: 'Mitsubishi Electric', country: 'Japan', details: 'A major player, particularly strong in its home market and China. Offers a wide range of factory automation products from PLCs to robots.' },
+            { name: 'Schneider Electric', country: 'France', details: 'Focuses on energy management and automation. Their EcoStruxure platform provides IoT-enabled solutions for efficiency and sustainability in industrial settings.' },
+            { name: 'Fanuc', country: 'Japan', details: 'Global leader in factory automation and industrial robots. Renowned for its CNC systems and high reliability, with a massive installed base in APAC automotive and electronics manufacturing.' },
+        ],
+        techData: {
+            labels: ['DCS', 'PLC', 'SCADA', 'MES', 'Industrial Robots'],
+            data: [34, 28, 20, 12, 6],
+            descriptions: {
+                'DCS': { title: 'Distributed Control System', text: 'Used for controlling large, complex processes in industries like chemicals and power generation. It provides centralized control and high reliability for entire plants.' },
+                'PLC': { title: 'Programmable Logic Controller', text: 'The workhorse of discrete manufacturing for controlling individual machines or smaller processes. Known for its ruggedness and real-time processing capabilities.' },
+                'SCADA': { title: 'Supervisory Control and Data Acquisition', text: 'A system for high-level supervision and data gathering from various sensors and PLCs over a wide area, common in utilities and infrastructure management.' },
+                'MES': { title: 'Manufacturing Execution System', text: 'Manages and monitors work-in-process on the factory floor. It bridges the gap between enterprise-level planning (ERP) and machine-level control (PLCs).' },
+                'Industrial Robots': { title: 'Industrial Robots', text: 'Automates physical tasks like welding, handling, and assembly. Increasingly integrated with vision systems and AI for greater flexibility and precision.' },
+            }
+        },
+        industryData: {
+            labels: ['Automotive', 'Electronics', 'Chemicals & Pharma', 'Food & Beverage', 'Metals & Mining', 'Oil & Gas'],
+            data: [90, 85, 75, 70, 60, 55]
+        },
+        regionData: {
+            labels: ['China', 'Japan', 'India', 'South Korea', 'ASEAN', 'Australia'],
+            data: [35, 20, 15, 12, 10, 8]
+        }
+    };
+
+    let techDonutChartInstance = null;
+    let industryBarChartInstance = null;
+    let regionBarChartInstance = null;
+    
+    function populatePlayers() {
+        const grid = document.getElementById('players-grid');
+        grid.innerHTML = appData.players.map((player, index) => `
+            <div class="player-card rounded-lg p-6" data-index="${index}">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="text-xl font-bold">${player.name}</h4>
+                        <p class="text-gray-500">${player.country}</p>
+                    </div>
+                    <span class="text-2xl text-gray-400 transform transition-transform duration-300">+</span>
+                </div>
+                <div class="player-details text-gray-700">
+                    <p>${player.details}</p>
+                </div>
+            </div>
+        `).join('');
+
+        grid.querySelectorAll('.player-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const alreadyActive = card.classList.contains('active');
+                grid.querySelectorAll('.player-card').forEach(c => {
+                    c.classList.remove('active');
+                    c.querySelector('span').style.transform = 'rotate(0deg)';
+                });
+                if (!alreadyActive) {
+                    card.classList.add('active');
+                    card.querySelector('span').style.transform = 'rotate(45deg)';
+                }
+            });
+        });
+    }
+
+    const chartColors = {
+        primary: '#607D8B', // Muted Teal
+        secondary: '#E07A5F', // Soft Terracotta
+        accent1: '#81C784', // Green
+        accent2: '#FFB74D', // Orange
+        accent3: '#4FC3F7', // Blue
+        accent4: '#BA68C8', // Purple
+        gridColor: '#E0E0E0',
+        textColor: '#3C3633',
+        tooltipBg: '#FFFFFF',
+    };
+
+    const chartDefaultOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: chartColors.textColor,
+                    font: { size: 12 }
+                }
+            },
+            tooltip: {
+                backgroundColor: chartColors.tooltipBg,
+                titleColor: chartColors.textColor,
+                bodyColor: chartColors.textColor,
+                borderColor: chartColors.gridColor,
+                borderWidth: 1,
+                padding: 10,
+                displayColors: true,
+                boxPadding: 4
+            }
+        },
+        animation: {
+            duration: 1000,
+            easing: 'easeInOutCubic'
+        }
+    };
+    
+    function createTechDonutChart() {
+        const ctx = document.getElementById('techDonutChart').getContext('2d');
+        techDonutChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: appData.techData.labels,
+                datasets: [{
+                    label: 'Market Share %',
+                    data: appData.techData.data,
+                    backgroundColor: [chartColors.primary, chartColors.secondary, chartColors.accent1, chartColors.accent2, chartColors.accent3],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 4,
+                    hoverOffset: 16
+                }]
+            },
+            options: {
+                ...chartDefaultOptions,
+                cutout: '60%',
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const i = elements[0].index;
+                        const label = techDonutChartInstance.data.labels[i];
+                        const descriptionData = appData.techData.descriptions[label];
+                        document.getElementById('tech-title').textContent = descriptionData.title;
+                        document.getElementById('tech-text').textContent = descriptionData.text;
+                    }
+                }
+            }
+        });
+    }
+
+    function createIndustryBarChart() {
+        if (industryBarChartInstance) industryBarChartInstance.destroy();
+        const ctx = document.getElementById('industryBarChart').getContext('2d');
+        industryBarChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: appData.industryData.labels,
+                datasets: [{
+                    label: 'Adoption Score (out of 100)',
+                    data: appData.industryData.data,
+                    backgroundColor: chartColors.primary,
+                    borderRadius: 4,
+                    barThickness: 30,
+                }]
+            },
+            options: {
+                ...chartDefaultOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        grid: { color: chartColors.gridColor },
+                        ticks: { color: chartColors.textColor }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: chartColors.textColor }
+                    }
+                },
+                plugins: {
+                    ...chartDefaultOptions.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function createRegionBarChart() {
+        if (regionBarChartInstance) regionBarChartInstance.destroy();
+        const ctx = document.getElementById('regionBarChart').getContext('2d');
+        regionBarChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: appData.regionData.labels,
+                datasets: [{
+                    label: 'Market Size ($B)',
+                    data: appData.regionData.data,
+                    backgroundColor: chartColors.secondary,
+                    borderRadius: 4,
+                    barThickness: 40,
+                }]
+            },
+            options: {
+                ...chartDefaultOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: chartColors.gridColor },
+                        ticks: { color: chartColors.textColor }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: chartColors.textColor }
+                    }
+                },
+                 plugins: {
+                    ...chartDefaultOptions.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+    
+    function setupDeepDiveFilters() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const views = {
+            tech: document.getElementById('tech-view'),
+            industry: document.getElementById('industry-view'),
+            region: document.getElementById('region-view')
+        };
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.view;
+
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                Object.values(views).forEach(v => v.classList.add('hidden'));
+                views[view].classList.remove('hidden');
+
+                if (view === 'industry' && !industryBarChartInstance) {
+                    createIndustryBarChart();
+                } else if (view === 'region' && !regionBarChartInstance) {
+                    createRegionBarChart();
+                }
+            });
+        });
+    }
+
+    // Initializations
+    populatePlayers();
+    createTechDonutChart();
+    setupDeepDiveFilters();
+});
 </script>
 
 </body>
