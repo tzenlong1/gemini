@@ -1,10 +1,672 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Landscape</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Leading Industrial Automation Publications in ASEAN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard for strategic decision-making, not a linear report. It starts with a high-level summary (Hero & Key Metrics) for quick insights. The core is the 'Comparison Dashboard,' allowing direct, visual comparison of magazines via an interactive chart and filterable detail cards, facilitating user-driven exploration. This is more intuitive than a static table. The 'Ecosystem Explorer' section visually maps relationships between publications, associations, and events, turning descriptive text into a navigable network. Finally, the 'Strategic Recommendations' section uses an accordion, targeting specific user personas (professionals, businesses, researchers) with actionable advice. This task-oriented structure prioritizes user goals and comprehension over the source report's linear format. -->
+    <!-- Visualization & Content Choices: 1. Magazine Comparison: Report data on readership/frequency -> Goal: Compare -> Viz: Interactive Bar Chart (Chart.js/Canvas) -> Interaction: Hover for tooltips with exact figures. -> Justification: Bar charts are optimal for comparing discrete quantitative data points, making relative performance immediately obvious. 2. Magazine Details: Report table data -> Goal: Inform -> Viz: Dynamic Content Cards (HTML/CSS) -> Interaction: Click buttons to switch between magazine profiles -> Justification: Replaces a static table with an interactive, focused view, reducing clutter. 3. Ecosystem Map: Report text on partnerships -> Goal: Show Relationships -> Viz: Diagrammatic Layout (HTML/Tailwind Flexbox) -> Interaction: Hover effects to highlight connections -> Justification: Translates complex relationships described in prose into an intuitive visual map. 4. Recommendations: Report's stakeholder advice -> Goal: Guide -> Viz: Accordion (HTML/JS) -> Interaction: Click to expand/collapse -> Justification: Organizes guidance for different audiences cleanly, allowing users to access only what's relevant to them. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #2d3748;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        .section-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        .eco-item {
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            text-align: center;
+        }
+        .eco-line {
+            width: 100%;
+            height: 2px;
+            background-color: #cbd5e1;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-    <h1>This is the renamed landscape.html file.</h1>
+<body class="smooth-scroll">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">ASEAN Automation Insights</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#dashboard" class="nav-link text-gray-600 font-medium pb-1 border-b-2 border-transparent">Dashboard</a>
+                <a href="#magazines" class="nav-link text-gray-600 font-medium pb-1 border-b-2 border-transparent">Publications</a>
+                <a href="#ecosystem" class="nav-link text-gray-600 font-medium pb-1 border-b-2 border-transparent">Ecosystem</a>
+                <a href="#recommendations" class="nav-link text-gray-600 font-medium pb-1 border-b-2 border-transparent">Strategy</a>
+            </div>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-gray-200 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="#dashboard">Dashboard</option>
+                    <option value="#magazines">Publications</option>
+                    <option value="#ecosystem">Ecosystem</option>
+                    <option value="#recommendations">Strategy</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+
+        <!-- Hero Section -->
+        <section id="hero" class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-gray-800 mb-4">Navigating the ASEAN Industrial Automation Media Landscape</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                This interactive report analyzes the key publications and information resources shaping the dynamic industrial automation sector in Southeast Asia. Explore the data to uncover strategic insights for your professional and business needs.
+            </p>
+        </section>
+
+        <!-- Comparison Dashboard Section -->
+        <section id="dashboard" class="mb-16">
+            <div class="text-center mb-12">
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-800">At a Glance: Publication Metrics</h3>
+                <p class="mt-2 text-md text-gray-500">Visually compare the leading magazines by key performance indicators. Hover over the chart for detailed figures.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white p-6 rounded-xl shadow-md">
+                <div class="space-y-4">
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h4 class="font-bold text-blue-800">Total Professional Reach</h4>
+                        <p class="text-3xl font-bold text-blue-600">62,000+</p>
+                        <p class="text-sm text-blue-500">Combined readership of the top two publications.</p>
+                    </div>
+                     <div class="p-4 bg-green-50 rounded-lg">
+                        <h4 class="font-bold text-green-800">Leading Publication Frequency</h4>
+                        <p class="text-3xl font-bold text-green-600">8 Issues/Year</p>
+                        <p class="text-sm text-green-500">Industrial Automation Asia (IAA) offers the most timely updates.</p>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg">
+                        <h4 class="font-bold text-amber-800">Key Industry Focus</h4>
+                        <p class="text-lg font-semibold text-amber-700">Industry 4.0, Smart Manufacturing, AI & Robotics, Sustainability</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="publicationsChart"></canvas>
+                </div>
+                <!-- New Feature Div: Summarize Industry Trends -->
+                <div class="md:col-span-2 mt-8 p-6 bg-gray-50 rounded-lg">
+                    <h4 class="font-bold text-xl text-gray-800 mb-4">Get a Quick Trend Summary ✨</h4>
+                    <p class="text-gray-600 mb-4">Click below to generate a concise summary of current and emerging industrial automation trends in ASEAN.</p>
+                    <button id="generate-trend-summary" class="bg-purple-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-300 flex items-center justify-center">
+                        Summarize Trends ✨
+                    </button>
+                    <div id="trend-summary-output" class="mt-4 p-4 bg-purple-50 rounded-lg text-gray-700 hidden">
+                        <div class="flex items-center justify-center mb-2">
+                            <div class="loading-spinner hidden"></div>
+                            <p class="loading-text ml-2 hidden">Generating summary...</p>
+                        </div>
+                        <p class="summary-text"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Magazine Deep Dive Section -->
+        <section id="magazines" class="mb-16">
+             <div class="text-center mb-12">
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-800">Publication Deep Dive</h3>
+                <p class="mt-2 text-md text-gray-500">Select a publication to explore its profile, focus areas, and unique value proposition in detail.</p>
+            </div>
+
+            <div class="flex justify-center mb-8">
+                <div class="flex space-x-2 md:space-x-4 bg-gray-200 p-1 rounded-full">
+                    <button class="tab-btn px-4 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-medium rounded-full transition-colors duration-300" data-tab="iaa">Industrial Automation Asia</button>
+                    <button class="tab-btn px-4 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-medium rounded-full transition-colors duration-300" data-tab="automate-asia">Automate Asia</button>
+                    <button class="tab-btn px-4 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-medium rounded-full transition-colors duration-300" data-tab="mfg-asia">Manufacturing Asia</button>
+                </div>
+            </div>
+
+            <div id="magazine-content" class="bg-white p-6 md:p-8 rounded-xl shadow-md min-h-[300px]">
+                <!-- Content will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Ecosystem Explorer Section -->
+        <section id="ecosystem" class="mb-16">
+            <div class="text-center mb-12">
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-800">ASEAN Automation Ecosystem</h3>
+                <p class="mt-2 text-md text-gray-500">Explore the interconnected network of publications, industry associations, and major trade events that form the backbone of the region's automation landscape.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <!-- Column 1: Associations -->
+                <div class="space-y-6">
+                    <h4 class="text-xl font-bold text-gray-700">Influential Associations</h4>
+                    <div class="section-card p-4">
+                        <h5 class="font-semibold">International Society of Automation (ISA)</h5>
+                        <p class="text-sm text-gray-500">Global standard-setter for automation, providing foundational knowledge, best practices, and cybersecurity frameworks.</p>
+                    </div>
+                    <div class="section-card p-4">
+                        <h5 class="font-semibold">ASEAN Federation of Smart Industry (AI)</h5>
+                        <p class="text-sm text-gray-500">Regional voice for Industry 4.0, guiding policy, strategy, and cross-border cooperation.</p>
+                    </div>
+                </div>
+                <!-- Column 2: Publications -->
+                <div class="space-y-6">
+                     <h4 class="text-xl font-bold text-gray-700">Key Publications</h4>
+                     <div id="iaa-eco" class="section-card p-4 border-2 border-transparent">
+                        <h5 class="font-semibold">Industrial Automation Asia</h5>
+                     </div>
+                     <div id="auto-eco" class="section-card p-4 border-2 border-transparent">
+                        <h5 class="font-semibold">Automate Asia Magazine</h5>
+                     </div>
+                </div>
+                <!-- Column 3: Trade Shows -->
+                 <div class="space-y-6">
+                    <h4 class="text-xl font-bold text-gray-700">Major Trade Shows</h4>
+                    <div id="itap-eco" class="section-card p-4">
+                        <h5 class="font-semibold">ITAP (Asia-Pacific)</h5>
+                        <p class="text-sm text-gray-500">Pivotal event for Industry 4.0 adoption.</p>
+                    </div>
+                    <div id="mfg-expo-eco" class="section-card p-4">
+                        <h5 class="font-semibold">Manufacturing Expo (Thailand)</h5>
+                        <p class="text-sm text-gray-500">ASEAN's most comprehensive manufacturing event.</p>
+                    </div>
+                     <div id="autoth-eco" class="section-card p-4">
+                        <h5 class="font-semibold">Automation Thailand</h5>
+                        <p class="text-sm text-gray-500">Connects solution providers with customers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-sm text-gray-500 italic">Hover over a Trade Show to see its media partners.</div>
+        </section>
+
+
+        <!-- Recommendations Section -->
+        <section id="recommendations">
+             <div class="text-center mb-12">
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-800">Strategic Recommendations</h3>
+                <p class="mt-2 text-md text-gray-500">Tailored guidance for different stakeholders to effectively leverage the ASEAN automation information ecosystem.</p>
+            </div>
+            <div class="max-w-4xl mx-auto space-y-4">
+                <div class="accordion-item bg-white rounded-lg shadow-sm">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg focus:outline-none">
+                        <span>For Industry Professionals</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-5 border-t border-gray-200 text-gray-600">
+                            <p>Diversify your information sources. Use <strong class="text-blue-600">IAA</strong> for broad market trends and <strong class="text-green-600">Automate Asia</strong> for technical deep-dives. Supplement with real-time news from online platforms and gain foundational knowledge from the <strong class="text-indigo-600">ISA</strong>. Attending trade shows like <strong class="text-rose-600">ITAP</strong> provides invaluable firsthand technology exposure and networking.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white rounded-lg shadow-sm">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg focus:outline-none">
+                        <span>For Businesses & Marketers</span>
+                         <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-5 border-t border-gray-200 text-gray-600">
+                            <p>Align your advertising with your goals. Use <strong class="text-blue-600">IAA</strong> for maximum brand reach to decision-makers. Choose <strong class="text-green-600">Automate Asia</strong> for targeted campaigns aimed at technical specialists. Prioritize integrated marketing by partnering with publications that have strong ties to major trade shows like <strong class="text-rose-600">ITAP</strong> to maximize visibility across print, digital, and live event platforms.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item bg-white rounded-lg shadow-sm">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-5 font-semibold text-lg focus:outline-none">
+                        <span>For Researchers & Academics</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-5 border-t border-gray-200 text-gray-600">
+                           <p>Use industry magazines like <strong class="text-blue-600">IAA</strong> and <strong class="text-green-600">Automate Asia</strong> to understand real-world technology applications, challenges, and adoption trends, which can inform research directions. For high-level policy and strategic context, consult reports from the <strong class="text-indigo-600">ASEAN Federation of Smart Industry (AI)</strong>. For foundational theory, refer to peer-reviewed journals.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-4 text-center text-gray-400 text-sm">
+            <p>&copy; 2025 ASEAN Automation Insights. An Interactive Report.</p>
+            <p>This application visualizes data from the "Leading Industrial Automation Publications and Resources in ASEAN" report for educational and informational purposes.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // Data
+            const magazineData = {
+                iaa: {
+                    title: 'Industrial Automation Asia (IAA)',
+                    focusKeywords: ['Smart Manufacturing', 'Robotics', 'IoT', 'Sustainability', 'Cybersecurity'],
+                    content: `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <h4 class="text-2xl font-bold text-gray-800 mb-2">Premier source for broad market intelligence.</h4>
+                                <p class="text-gray-600 mb-4">Established in 2001, IAA is a frontrunner in the region's industrial automation media. It is ideal for senior management, business development professionals, and purchasers seeking a holistic view of the industry.</p>
+                                <strong class="block font-semibold text-gray-700 mb-2">Key Focus Areas:</strong>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Smart Manufacturing</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Robotics</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">IoT</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Sustainability</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Cybersecurity</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-3">
+                                <h5 class="font-bold text-lg">Quick Facts</h5>
+                                <p><strong>Readership:</strong> <span class="font-bold text-blue-600">37,000</span></p>
+                                <p><strong>Frequency:</strong> <span class="font-bold text-blue-600">8 issues/year</span></p>
+                                <p><strong>Key Differentiator:</strong></p>
+                                <p class="text-sm text-gray-700">First BPA Audited automation publication in the region, ensuring verified readership and credibility.</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <button id="generate-iaa-ideas" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center">
+                                Generate Article Ideas ✨
+                            </button>
+                            <div id="iaa-ideas-output" class="mt-4 p-4 bg-blue-50 rounded-lg text-gray-700 hidden">
+                                <div class="flex items-center justify-center mb-2">
+                                    <div class="loading-spinner hidden"></div>
+                                    <p class="loading-text ml-2 hidden">Generating ideas...</p>
+                                </div>
+                                <ul class="list-disc pl-5 space-y-2"></ul>
+                            </div>
+                        </div>
+                    `
+                },
+                'automate-asia': {
+                    title: 'Automate Asia Magazine',
+                    focusKeywords: ['Industry 4.0', 'AI & Predictive Maintenance', 'Robotics', 'Automation Tech'],
+                    content: `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <h4 class="text-2xl font-bold text-gray-800 mb-2">Source for targeted tech news and in-depth features.</h4>
+                                <p class="text-gray-600 mb-4">Published since 2006, Automate Asia delivers granular, focused information, making it highly suitable for engineers, technical specialists, and researchers who require detailed updates and expert commentary.</p>
+                                <strong class="block font-semibold text-gray-700 mb-2">Key Focus Areas:</strong>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Industry 4.0</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">AI & Predictive Maintenance</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Robotics</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Automation Tech</span>
+                                </div>
+                            </div>
+                             <div class="bg-gray-50 p-4 rounded-lg space-y-3">
+                                <h5 class="font-bold text-lg">Quick Facts</h5>
+                                <p><strong>Readership:</strong> <span class="font-bold text-green-600">25,000</span></p>
+                                <p><strong>Frequency:</strong> <span class="font-bold text-green-600">Quarterly (4/year)</span></p>
+                                <p><strong>Key Differentiator:</strong></p>
+                                <p class="text-sm text-gray-700">Leverages its parent company's event database for targeted content and offers deep insights via exclusive interviews.</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <button id="generate-automate-asia-ideas" class="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-300 flex items-center justify-center">
+                                Generate Article Ideas ✨
+                            </button>
+                            <div id="automate-asia-ideas-output" class="mt-4 p-4 bg-green-50 rounded-lg text-gray-700 hidden">
+                                <div class="flex items-center justify-center mb-2">
+                                    <div class="loading-spinner hidden"></div>
+                                    <p class="loading-text ml-2 hidden">Generating ideas...</p>
+                                </div>
+                                <ul class="list-disc pl-5 space-y-2"></ul>
+                            </div>
+                        </div>
+                    `
+                },
+                'mfg-asia': {
+                    title: 'Manufacturing Asia',
+                    focusKeywords: ['AI in Manufacturing', 'Robotics Adoption', 'Automotive & Electronics', 'Data Centers'],
+                    content: `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <h4 class="text-2xl font-bold text-gray-800 mb-2">Specialized resource for AI & Robotics adoption.</h4>
+                                <p class="text-gray-600 mb-4">This publication carves out a niche for professionals specifically interested in the impact of AI and robotics within the manufacturing sector, particularly in automotive and electronics. It serves best as a supplementary resource for highly specialized interests.</p>
+                                <strong class="block font-semibold text-gray-700 mb-2">Key Focus Areas:</strong>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">AI in Manufacturing</span>
+                                    <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Robotics Adoption</span>
+                                    <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Automotive & Electronics</span>
+                                    <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Data Centers</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-3">
+                                <h5 class="font-bold text-lg">Quick Facts</h5>
+                                <p><strong>Readership:</strong> <span class="font-bold text-amber-600">N/A</span></p>
+                                <p><strong>Frequency:</strong> <span class="font-bold text-amber-600">Unspecified</span></p>
+                                <p><strong>Key Differentiator:</strong></p>
+                                <p class="text-sm text-gray-700">Highly specialized focus on the intersection of AI, robotics, and manufacturing across Asia.</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <button id="generate-mfg-asia-ideas" class="bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-300 flex items-center justify-center">
+                                Generate Article Ideas ✨
+                            </button>
+                            <div id="mfg-asia-ideas-output" class="mt-4 p-4 bg-amber-50 rounded-lg text-gray-700 hidden">
+                                <div class="flex items-center justify-center mb-2">
+                                    <div class="loading-spinner hidden"></div>
+                                    <p class="loading-text ml-2 hidden">Generating ideas...</p>
+                                </div>
+                                <ul class="list-disc pl-5 space-y-2"></ul>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+
+            // Chart.js implementation
+            const ctx = document.getElementById('publicationsChart').getContext('2d');
+            const publicationsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Industrial Automation Asia', 'Automate Asia Magazine'],
+                    datasets: [{
+                        label: 'Verified Readership',
+                        data: [37000, 25000],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Issues per Year',
+                        data: [8, 4],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Readership'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                             title: {
+                                display: true,
+                                text: 'Issues per Year'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US').format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const magazineContentDiv = document.getElementById('magazine-content');
+            let currentMagazineId = 'iaa'; // Track the currently active magazine tab
+
+            async function updateTabContent(tabId) {
+                currentMagazineId = tabId; // Update current magazine ID
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if(btn.dataset.tab === tabId) {
+                        btn.classList.add('active');
+                    }
+                });
+                magazineContentDiv.innerHTML = magazineData[tabId].content;
+
+                // Re-attach event listener for the new button after content is updated
+                const generateButton = magazineContentDiv.querySelector(`#generate-${tabId}-ideas`);
+                if (generateButton) {
+                    generateButton.addEventListener('click', () => generateArticleIdeas(tabId));
+                }
+            }
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateTabContent(button.dataset.tab);
+                });
+            });
+
+            // Initialize with the first tab
+            updateTabContent('iaa');
+
+            // Gemini API Integration for Article Ideas
+            async function generateArticleIdeas(magazineId) {
+                const outputDiv = document.getElementById(`${magazineId}-ideas-output`);
+                const loadingSpinner = outputDiv.querySelector('.loading-spinner');
+                const loadingText = outputDiv.querySelector('.loading-text');
+                const ideasList = outputDiv.querySelector('ul');
+
+                outputDiv.classList.remove('hidden');
+                ideasList.innerHTML = ''; // Clear previous ideas
+                loadingSpinner.classList.remove('hidden');
+                loadingText.classList.remove('hidden');
+
+                const focusKeywords = magazineData[magazineId].focusKeywords.join(', ');
+                const prompt = `Generate 5 unique and engaging article ideas (titles and a brief 1-sentence description) for an industrial automation magazine. The articles should focus on the following themes: ${focusKeywords}. Ensure the ideas are relevant to the ASEAN industrial automation sector. Format the output as a numbered list.`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        const ideas = text.split('\n').filter(line => line.trim() !== '');
+                        ideas.forEach(idea => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = idea.replace(/^\d+\.\s*/, ''); // Remove numbering if present
+                            ideasList.appendChild(listItem);
+                        });
+                    } else {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = 'Could not generate ideas. Please try again.';
+                        ideasList.appendChild(listItem);
+                    }
+                } catch (error) {
+                    console.error('Error generating article ideas:', error);
+                    const listItem = document.createElement('li');
+                    listItem.textContent = 'An error occurred while generating ideas. Please try again.';
+                    ideasList.appendChild(listItem);
+                } finally {
+                    loadingSpinner.classList.add('hidden');
+                    loadingText.classList.add('hidden');
+                }
+            }
+
+            // Gemini API Integration for Industry Trend Summary
+            async function summarizeIndustryTrends() {
+                const outputDiv = document.getElementById('trend-summary-output');
+                const loadingSpinner = outputDiv.querySelector('.loading-spinner');
+                const loadingText = outputDiv.querySelector('.loading-text');
+                const summaryTextElement = outputDiv.querySelector('.summary-text');
+
+                outputDiv.classList.remove('hidden');
+                summaryTextElement.textContent = ''; // Clear previous summary
+                loadingSpinner.classList.remove('hidden');
+                loadingText.classList.remove('hidden');
+
+                const prompt = `Provide a concise summary (around 3-4 sentences or 3-5 bullet points) of the current and emerging key trends in industrial automation within the ASEAN region. Focus on topics such as Industry 4.0, Smart Manufacturing, AI, Robotics, IoT, Sustainability, and Cybersecurity.`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        summaryTextElement.textContent = text;
+                    } else {
+                        summaryTextElement.textContent = 'Could not generate summary. Please try again.';
+                    }
+                } catch (error) {
+                    console.error('Error generating trend summary:', error);
+                    summaryTextElement.textContent = 'An error occurred while generating the summary. Please try again.';
+                } finally {
+                    loadingSpinner.classList.add('hidden');
+                    loadingText.classList.add('hidden');
+                }
+            }
+
+            // Attach event listener for the new trend summary button
+            document.getElementById('generate-trend-summary').addEventListener('click', summarizeIndustryTrends);
+
+
+            // Accordion functionality
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('span:last-child');
+                    
+                    // Close other accordions
+                    accordionHeaders.forEach(otherHeader => {
+                        if (otherHeader !== header) {
+                            otherHeader.nextElementSibling.style.maxHeight = null;
+                            otherHeader.querySelector('span:last-child').style.transform = 'rotate(0deg)';
+                        }
+                    });
+
+                    // Toggle current accordion
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+             // Ecosystem hover effect
+            const itap = document.getElementById('itap-eco');
+            const autoth = document.getElementById('autoth-eco');
+            const iaaEco = document.getElementById('iaa-eco');
+            const autoEco = document.getElementById('auto-eco');
+
+            itap.addEventListener('mouseenter', () => iaaEco.style.borderColor = '#ef4444');
+            itap.addEventListener('mouseleave', () => iaaEco.style.borderColor = 'transparent');
+            
+            autoth.addEventListener('mouseenter', () => autoEco.style.borderColor = '#ef4444');
+            autoth.addEventListener('mouseleave', () => autoEco.style.borderColor = 'transparent');
+            
+            // Smooth scrolling for navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Mobile nav
+            document.getElementById('mobile-nav').addEventListener('change', function() {
+                window.location.hash = this.value;
+            });
+        });
+    </script>
 </body>
 </html>
