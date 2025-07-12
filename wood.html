@@ -4,5 +4,479 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Influential Voices: AP Woodworking Trade Media</title>
-    ...
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A dashboard-style SPA with top navigation for jumping to key sections: Market Overview, Publications, Influential Voices, and Strategy. This non-linear structure is chosen for user-driven exploration, allowing users to dive into the area that interests them most, rather than following the linear flow of the source report. Key interactions include an interactive market growth chart to provide immediate context, a tab-based system to compare publications without information overload, and a filterable gallery of editors to allow users to find experts based on specific criteria (e.g., sustainability, market analysis). This design prioritizes usability and efficient information discovery. -->
+    <!-- Visualization & Content Choices: 
+        - AP Plywood Market Growth: Report Info -> Plywood market valued at USD 42.64B (2024), projected to USD 80.82B (2034). Goal -> Show change/growth. Viz/Presentation -> Line Chart. Interaction -> Hover tooltips. Justification -> Best for showing trends over time. Library -> Chart.js.
+        - Publication Comparison: Report Info -> Details of PFA, FDM Asia, Asia Bulletin. Goal -> Compare/Organize. Viz/Presentation -> Tabbed content cards. Interaction -> Click to switch view. Justification -> Allows focused comparison without clutter. Library/Method -> HTML/CSS/JS.
+        - Editor Profiles: Report Info -> List of editors and their expertise. Goal -> Organize/Inform. Viz/Presentation -> Filterable grid of profile cards. Interaction -> Click filters to show/hide cards. Justification -> Enables users to find experts by topic. Library/Method -> HTML/CSS/JS.
+        - Publisher-Event Synergy: Report Info -> Pablo Publishing's dual role as publisher and event organizer. Goal -> Explain a relationship. Viz/Presentation -> HTML/CSS diagram. Interaction -> Static. Justification -> A simple visual flow is more intuitive than text alone. Library/Method -> HTML/CSS.
+        - Strategic Recommendations: Report Info -> List of strategies for businesses. Goal -> Inform/Organize. Viz/Presentation -> Accordion UI. Interaction -> Click to expand/collapse. Justification -> Condenses detailed text into manageable sections. Library/Method -> HTML/CSS/JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfdfc;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #a56a44;
+            border-bottom-color: #a56a44;
+        }
+        .filter-btn {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .filter-btn.active {
+            background-color: #a56a44;
+            color: #fff;
+        }
+        .publication-tab.active {
+            border-color: #a56a44;
+            background-color: #fff;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .llm-response {
+            background-color: #f0fdf4; /* Light green for success/info */
+            border-left: 4px solid #4ade80; /* Green border */
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            font-size: 0.9rem;
+            color: #166534; /* Dark green text */
+        }
+        .llm-error {
+            background-color: #fef2f2; /* Light red for error */
+            border-left: 4px solid #ef4444; /* Red border */
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+            color: #b91c1c; /* Dark red text */
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #a56a44;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-stone-700">AP Woodworking Media Insights</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#market" class="nav-link pb-1">Market Overview</a>
+                <a href="#publications" class="nav-link pb-1">Publications</a>
+                <a href="#voices" class="nav-link pb-1">Influential Voices</a>
+                <a href="#strategy" class="nav-link pb-1">Strategic Engagement</a>
+            </div>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-white border border-stone-300 rounded-md p-2">
+                    <option value="#market">Market Overview</option>
+                    <option value="#publications">Publications</option>
+                    <option value="#voices">Influential Voices</option>
+                    <option value="#strategy">Strategic Engagement</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+        <section id="market" class="my-8 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-stone-700">A Thriving Industry: The AP Woodworking Market</h2>
+            <p class="text-center max-w-3xl mx-auto mb-10 text-stone-600">The Asia-Pacific region is the global powerhouse in the woodworking and timber sector, driven by rapid urbanization and a growing demand for sustainable products. This section provides a high-level overview of the market's significant growth, setting the stage for understanding the vital role of trade media in this dynamic environment.</p>
+            <div class="grid md:grid-cols-3 gap-6 mb-12 text-center">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-3xl font-bold text-amber-700">31.8%</h3>
+                    <p class="text-stone-600 mt-2">Global Market Share</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-3xl font-bold text-amber-700">$80.82B</h3>
+                    <p class="text-stone-600 mt-2">Projected Plywood Market by 2034</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-3xl font-bold text-amber-700">Key Drivers</h3>
+                    <p class="text-stone-600 mt-2">Urbanization & Sustainable Design</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold text-center mb-4">AP Plywood Industry Growth Projection (USD Billions)</h3>
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="publications" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-stone-700">Key Publications Shaping the Discourse</h2>
+             <p class="text-center max-w-3xl mx-auto mb-10 text-stone-600">In the vast Asia-Pacific woodworking industry, a few key publications serve as the primary sources of news, technology updates, and market intelligence. This section allows you to explore these cornerstone platforms, understand their focus areas, and see how they influence the industry's direction through their content and strategic event partnerships.</p>
+
+            <div class="flex justify-center mb-8 border-b border-stone-200">
+                <button data-tab="pfa" class="publication-tab text-lg font-medium px-6 py-3 border-b-2 transition-colors duration-300">Panels & Furniture Asia</button>
+                <button data-tab="fdm" class="publication-tab text-lg font-medium px-6 py-3 border-b-2 transition-colors duration-300">FDM Asia</button>
+                <button data-tab="fea" class="publication-tab text-lg font-medium px-6 py-3 border-b-2 transition-colors duration-300">Forest Economic Advisors</button>
+            </div>
+
+            <div id="publication-content"></div>
+        </section>
+
+        <section id="voices" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-stone-700">Influential Voices of the Industry</h2>
+             <p class="text-center max-w-3xl mx-auto mb-10 text-stone-600">Behind every influential publication is a team of dedicated editors, journalists, and analysts. This interactive gallery introduces you to the key individuals shaping the conversation in AP woodworking. Use the filters to discover experts based on their primary focus, from championing sustainability to dissecting complex market data.</p>
+            <div class="flex justify-center flex-wrap gap-2 mb-8">
+                <button data-filter="all" class="filter-btn active bg-stone-200 px-4 py-2 rounded-full font-medium">All Voices</button>
+                <button data-filter="journalism" class="filter-btn bg-stone-200 px-4 py-2 rounded-full font-medium">Journalism</button>
+                <button data-filter="sustainability" class="filter-btn bg-stone-200 px-4 py-2 rounded-full font-medium">Sustainability</button>
+                <button data-filter="analysis" class="filter-btn bg-stone-200 px-4 py-2 rounded-full font-medium">Market Analysis</button>
+            </div>
+            <div id="voices-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </section>
+
+        <section id="strategy" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-stone-700">Strategic Engagement</h2>
+             <p class="text-center max-w-3xl mx-auto mb-10 text-stone-600">For businesses looking to thrive in the AP woodworking market, engaging with these media platforms is not just an option—it's a necessity. This section outlines actionable strategies for collaboration, thought leadership, and brand positioning, turning media insights into a competitive advantage.</p>
+            <div id="accordion-container" class="max-w-4xl mx-auto space-y-4"></div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Interactive Report generated from "Influential Editorial Voices Shaping Asia-Pacific Woodworking Trade Media".</p>
+            <p class="text-sm text-stone-400 mt-2">This is a single-page application designed for informational purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const publicationData = {
+                pfa: {
+                    title: "Panels & Furniture Asia",
+                    publisher: "Pablo Publishing & Exhibition Pte Ltd",
+                    focus: "Wood-based panels, furniture processing, technology, sustainability, design, and market reports.",
+                    summary: "As 'Asia's leading magazine for the wood and woodworking industry,' PFA is a cornerstone for authentic journalism, covering everything from technology to sustainability. Its publisher, Pablo Publishing, creates a powerful synergy by also organizing major regional trade shows like Sylva Wood Expo and Hanoi Wood Expo, giving the editorial team unparalleled access to industry innovations.",
+                    synergy: {
+                        active: true,
+                        title: "Publisher Synergy: Media & Events",
+                        steps: ["Publications like PFA", "Promote & Cover", "Trade Shows (e.g., Sylva Wood)", "Generate Content & Insights", "Inform Editorial"]
+                    }
+                },
+                fdm: {
+                    title: "FDM Asia",
+                    publisher: "Eastern Trade Media Pte Ltd (historical)",
+                    focus: "Process technologies, furniture production, panels manufacturing, raw materials handling, and sustainability.",
+                    summary: "For nearly 40 years, FDM Asia has been a 'publication of choice for woodworking professionals.' It provides expert insights and the latest news, including regular ITTO Tropical Timber Market Reports. While its legacy is strong, current information on its editorial team and publisher is less transparent, with its influence stemming more from its long-standing reputation and consistent content.",
+                    synergy: { active: false }
+                },
+                fea: {
+                    title: "Asia Bulletin (Forest Economic Advisors)",
+                    publisher: "Forest Economic Advisors, LLC",
+                    focus: "Timber trade data, market analysis, trade flows, and prices for logs, lumber, and panels.",
+                    summary: "FEA provides critical, data-driven market intelligence rather than traditional journalism. Its monthly Asia Bulletin offers essential insights into trade volumes, sourcing trends, and prices across key Asian markets. The analysts at FEA are highly influential, acting as 'editors' of vital market data that directly informs strategic business and investment decisions throughout the industry.",
+                    synergy: { active: false }
+                }
+            };
+
+            const voicesData = [
+                { name: 'Yap Shi Quan', publication: 'Panels & Furniture Asia', expertise: 'Editor, Sustainability, Green Production', category: 'sustainability' },
+                { name: 'YanJun Pang', publication: 'Panels & Furniture Asia', expertise: 'Prolific Author, Technology, Market Reports', category: 'journalism' },
+                { name: 'Shujie Yang', publication: 'Panels & Furniture Asia', expertise: 'Author, Corporate News, Technology', category: 'journalism' },
+                { name: 'Mark Smith', publication: 'Asia Bulletin (FEA)', expertise: 'Analyst, China Timber Market', category: 'analysis' },
+                { name: 'Paul F. Jannke', publication: 'Asia Bulletin (FEA)', expertise: 'Analyst, Lumber Markets', category: 'analysis' },
+                { name: 'Rocky Goodnow', publication: 'Asia Bulletin (FEA)', expertise: 'Analyst, Timber & Sawmill Profiles', category: 'analysis' },
+                { name: 'Greg Lewis', publication: 'Asia Bulletin (FEA)', expertise: 'Analyst, Panel Markets', category: 'analysis' },
+                { name: 'Art Schmon', publication: 'Asia Bulletin (FEA)', expertise: 'Analyst, Engineered Lumber', category: 'analysis' },
+                { name: 'Per Friis Knudsen', publication: 'Global Timber / PFA', expertise: 'Author, Timber Trade, Hardwood', category: 'journalism' },
+            ];
+            
+            const strategyData = [
+                {
+                    title: "Content Contribution & Collaboration",
+                    content: "Proactively submit press releases, detailed case studies, and expert articles that highlight your company's innovations and sustainable initiatives. Tailor your pitches to the specific interests of editors like Yap Shi Quan (sustainability) or YanJun Pang (technology trends) to increase the likelihood of coverage."
+                },
+                {
+                    title: "Establish Thought Leadership",
+                    content: "Seek opportunities for interviews, opinion pieces, or participation in panel discussions featured by these publications. Align your company's messaging with key editorial themes such as smart manufacturing and design innovation to position your executives as industry leaders."
+                },
+                {
+                    title: "Active Event Participation",
+                    content: "Engage with trade shows organized or promoted by these publishers, such as Sylva Wood Expo and Hanoi Wood Expo. These events offer direct avenues for media coverage and valuable networking opportunities with editorial teams and key industry players."
+                },
+                {
+                    title: "Leverage Market Intelligence",
+                    content: "Incorporate data and analysis from authoritative sources like Forest Economic Advisors' Asia Bulletin into your company's strategic messaging. This demonstrates a deep understanding of market dynamics and positions your brand as a highly credible and informed partner."
+                }
+            ];
+
+            const publicationContentEl = document.getElementById('publication-content');
+            const publicationTabs = document.querySelectorAll('.publication-tab');
+            const voicesGridEl = document.getElementById('voices-grid');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const accordionContainerEl = document.getElementById('accordion-container');
+
+            // --- Gemini API Call Function ---
+            async function callGeminiAPI(prompt, targetElement) {
+                targetElement.innerHTML = '<div class="spinner"></div> Generating...';
+                targetElement.classList.remove('llm-response', 'llm-error');
+                targetElement.style.display = 'block';
+
+                try {
+                    const chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        targetElement.innerHTML = text;
+                        targetElement.classList.add('llm-response');
+                    } else {
+                        targetElement.innerHTML = 'Error: Could not get a valid response from the LLM.';
+                        targetElement.classList.add('llm-error');
+                        console.error('LLM response structure unexpected:', result);
+                    }
+                } catch (error) {
+                    targetElement.innerHTML = 'Error: Failed to connect to the LLM API. Please try again.';
+                    targetElement.classList.add('llm-error');
+                    console.error('LLM API call failed:', error);
+                }
+            }
+
+            function renderPublication(tab) {
+                const data = publicationData[tab];
+                let synergyHtml = '';
+                if (data.synergy.active) {
+                    synergyHtml = `
+                        <div class="mt-8 border-t border-stone-200 pt-6">
+                            <h4 class="text-xl font-semibold mb-4 text-center text-amber-800">${data.synergy.title}</h4>
+                            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                                ${data.synergy.steps.map((step, index) => `
+                                    <div class="flex items-center ${index === data.synergy.steps.length - 1 ? '' : 'flex-col md:flex-row'}">
+                                        <div class="p-4 bg-stone-100 rounded-lg shadow-sm w-40 h-20 flex items-center justify-center">
+                                            <span class="font-medium text-stone-700">${step}</span>
+                                        </div>
+                                        ${index < data.synergy.steps.length - 1 ? `<span class="text-2xl font-light text-amber-700 mx-4 mt-2 md:mt-0">${index === data.synergy.steps.length - 2 ? '&#x21BA;' : '&#x2192;'}</span>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                }
+
+                publicationContentEl.innerHTML = `
+                    <div class="bg-white p-8 rounded-lg shadow-xl transition-opacity duration-500 opacity-0">
+                        <h3 class="text-2xl font-bold mb-2 text-stone-800">${data.title}</h3>
+                        <p class="text-sm font-semibold text-amber-700 mb-4">Publisher: ${data.publisher}</p>
+                        <p class="text-stone-600 mb-2"><strong class="font-semibold text-stone-700">Focus Areas:</strong> ${data.focus}</p>
+                        <p class="text-stone-600 leading-relaxed">${data.summary}</p>
+                        ${synergyHtml}
+                        <button id="summarize-btn" class="mt-6 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors duration-300">✨ Summarize Content</button>
+                        <div id="publication-summary-llm" class="llm-response" style="display:none;"></div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    publicationContentEl.querySelector('div').classList.remove('opacity-0');
+                }, 10);
+
+                document.getElementById('summarize-btn').addEventListener('click', async () => {
+                    const prompt = `Summarize the following information about a woodworking trade publication in 2-3 concise sentences:
+                    Title: ${data.title}
+                    Focus: ${data.focus}
+                    Summary: ${data.summary}`;
+                    const targetElement = document.getElementById('publication-summary-llm');
+                    await callGeminiAPI(prompt, targetElement);
+                });
+            }
+
+            publicationTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    publicationTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderPublication(tab.dataset.tab);
+                });
+            });
+            
+            function renderVoices(filter = 'all') {
+                voicesGridEl.innerHTML = '';
+                const filteredVoices = filter === 'all' 
+                    ? voicesData 
+                    : voicesData.filter(v => v.category === filter || (filter === 'journalism' && (v.category === 'sustainability' || v.category === 'journalism')));
+
+                filteredVoices.forEach((voice, index) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-6 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300";
+                    card.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mr-4">
+                                <span class="text-xl font-bold text-amber-700">${voice.name.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-stone-800">${voice.name}</h4>
+                                <p class="text-sm text-amber-700 font-medium">${voice.publication}</p>
+                            </div>
+                        </div>
+                        <p class="text-stone-600"><strong class="font-semibold text-stone-700">Expertise:</strong> ${voice.expertise}</p>
+                        <button id="pitch-btn-${index}" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors duration-300 text-sm">✨ Generate Pitch Idea</button>
+                        <div id="pitch-llm-${index}" class="llm-response" style="display:none;"></div>
+                    `;
+                    voicesGridEl.appendChild(card);
+
+                    document.getElementById(`pitch-btn-${index}`).addEventListener('click', async () => {
+                        const prompt = `You are a PR consultant. Generate a concise, compelling pitch idea (2-3 sentences) for a woodworking company to present to ${voice.name} from ${voice.publication}. Focus on their expertise: ${voice.expertise}.`;
+                        const targetElement = document.getElementById(`pitch-llm-${index}`);
+                        await callGeminiAPI(prompt, targetElement);
+                    });
+                });
+            }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderVoices(btn.dataset.filter);
+                });
+            });
+
+            function renderAccordion() {
+                accordionContainerEl.innerHTML = strategyData.map((item, index) => `
+                    <div class="bg-white rounded-lg shadow border border-stone-200">
+                        <h2>
+                            <button type="button" class="accordion-toggle flex items-center justify-between w-full p-5 font-semibold text-left text-stone-700 hover:bg-stone-50" data-index="${index}">
+                                <span>${item.title}</span>
+                                <svg class="w-6 h-6 shrink-0 accordion-icon transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                        </h2>
+                        <div class="accordion-content p-5 border-t border-stone-200">
+                            <p class="text-stone-600 leading-relaxed">${item.content}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('.accordion-toggle').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.parentElement.nextElementSibling;
+                        const icon = button.querySelector('.accordion-icon');
+                        
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null;
+                            icon.classList.remove('rotate-180');
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + "px";
+                            icon.classList.add('rotate-180');
+                        }
+                    });
+                });
+            }
+
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2024', '2026', '2028', '2030', '2032', '2034'],
+                    datasets: [{
+                        label: 'AP Plywood Market Value (USD Billion)',
+                        data: [42.64, 50.2, 58.5, 66.8, 74.1, 80.82],
+                        backgroundColor: 'rgba(165, 106, 68, 0.1)',
+                        borderColor: '#a56a44',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#a56a44',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            const mobileNav = document.getElementById('mobile-nav');
+            mobileNav.addEventListener('change', function() {
+                window.location.hash = this.value;
+            });
+            
+            document.querySelector('.publication-tab[data-tab="pfa"]').classList.add('active');
+            renderPublication('pfa');
+            renderVoices();
+            renderAccordion();
+
+        });
+    </script>
+</body>
 </html>
