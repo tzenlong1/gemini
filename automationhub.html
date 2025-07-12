@@ -9,10 +9,677 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Stone background, Teal/Sky accents) -->
+    <!-- Application Structure Plan: A non-linear, task-oriented single-page application with a top navigation bar. The structure prioritizes user-driven exploration over the report's linear format. Views include a Market Overview with interactive charts, a Vendor Hub with clickable profiles, a country-filtered Integrator Network, a filterable Case Study gallery, and a scannable Strategic Guide. This design allows users to quickly access specific information (e.g., a specific vendor or country) without reading the entire document, enhancing usability and engagement. -->
+    <!-- Visualization & Content Choices: Market Growth -> Goal: Change -> Viz: Line Chart (Chart.js) -> Interaction: Hover -> Justification: Shows trend. Vendor Profiles -> Goal: Organize/Inform -> Viz: Modal/Drawer -> Interaction: Click logo -> Justification: Hides complexity, focuses user. Integrators -> Goal: Organize -> Viz: Dropdown Filter -> Interaction: Select country -> Justification: Simple filtering. Case Studies -> Goal: Compare/Inform -> Viz: Card Gallery -> Interaction: Filter buttons -> Justification: Easy discovery of relevant examples. All charts use Chart.js on Canvas. Diagrams are structured HTML/CSS. This avoids SVG/Mermaid as required and provides a dynamic, interactive experience. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { transition: color 0.3s, border-bottom-color 0.3s; }
+        .nav-link.active { color: #0f766e; border-bottom-color: #0f766e; }
+        .nav-link:not(.active):hover { color: #0d9488; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .chart-container { position: relative; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto; height: 350px; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .modal-bg {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 50;
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+        }
+        .modal-bg.open .modal-content {
+            transform: translateY(0);
+        }
+    </style>
 </head>
-<body>
-<!-- The body content is assumed to be fully provided already -->
-<!-- Due to length, we are only simulating this as a placeholder -->
-<p>This is a placeholder for the full HTML content which is assumed to be already provided and valid.</p>
+<body class="bg-stone-50 text-stone-800">
+
+    <div id="app">
+        <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-40 border-b border-stone-200">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <span class="font-bold text-xl text-teal-700">SEA Automation Hub</span>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="#market-overview" class="nav-link px-3 py-2 text-sm font-medium border-b-2 border-transparent">Market Overview</a>
+                            <a href="#vendor-hub" class="nav-link px-3 py-2 text-sm font-medium border-b-2 border-transparent">Vendor Hub</a>
+                            <a href="#integrator-network" class="nav-link px-3 py-2 text-sm font-medium border-b-2 border-transparent">Integrator Network</a>
+                            <a href="#success-stories" class="nav-link px-3 py-2 text-sm font-medium border-b-2 border-transparent">Success Stories</a>
+                            <a href="#strategic-guide" class="nav-link px-3 py-2 text-sm font-medium border-b-2 border-transparent">Strategic Guide</a>
+                        </div>
+                    </div>
+                    <div class="md:hidden">
+                        <select id="mobile-nav" class="bg-white border border-stone-300 rounded-md py-2 px-3 text-sm">
+                            <option value="market-overview">Market Overview</option>
+                            <option value="vendor-hub">Vendor Hub</option>
+                            <option value="integrator-network">Integrator Network</option>
+                            <option value="success-stories">Success Stories</option>
+                            <option value="strategic-guide">Strategic Guide</option>
+                        </select>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <section id="market-overview" class="tab-content">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Southeast Asia's Automation Boom</h1>
+                    <p class="mt-4 text-lg text-stone-600">The industrial automation market in Southeast Asia is on a rapid growth trajectory, driven by technological advancements and economic shifts. This section provides a high-level overview of the market's dynamics, key growth drivers, and a snapshot of the regional landscape.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 text-center">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <p class="text-3xl font-bold text-teal-600">$2.3B</p>
+                        <p class="text-stone-600 mt-1">Projected Market Size by 2032</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <p class="text-3xl font-bold text-teal-600">6.6%</p>
+                        <p class="text-stone-600 mt-1">CAGR (2025-2032)</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <p class="text-3xl font-bold text-teal-600">Oil & Gas</p>
+                        <p class="text-stone-600 mt-1">Largest End-User Sector</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <p class="text-3xl font-bold text-teal-600">Singapore</p>
+                        <p class="text-stone-600 mt-1">Largest Market Share</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md border border-stone-200 mb-12">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-stone-800">Market Growth Projection (USD Billions)</h3>
+                    <div class="chart-container">
+                        <canvas id="marketGrowthChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold text-center mb-6 text-stone-800">Key Growth Drivers</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                            <h4 class="text-lg font-semibold mb-2">💰 Reduced System Costs</h4>
+                            <p class="text-stone-600">Lowering financial barriers makes automation accessible to more businesses, including SMEs.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                            <h4 class="text-lg font-semibold mb-2">📈 Foreign Direct Investment</h4>
+                            <p class="text-stone-600">Capital and advanced technology from foreign companies are stimulating market development.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                            <h4 class="text-lg font-semibold mb-2">🛠️ Industry 4.0 Initiatives</h4>
+                            <p class="text-stone-600">Government and private sector investment in smart manufacturing is accelerating digital transformation.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                            <h4 class="text-lg font-semibold mb-2">💸 Rising Labor Costs</h4>
+                            <p class="text-stone-600">Incentivizes businesses to automate manual tasks for cost optimization and competitiveness.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                            <h4 class="text-lg font-semibold mb-2">🛡️ Safety & Hygiene Demands</h4>
+                            <p class="text-stone-600">Automation helps meet stringent regulatory standards, especially in F&B and pharmaceuticals.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                            <h4 class="text-lg font-semibold mb-2">🛒 E-commerce & Supply Chain</h4>
+                            <p class="text-stone-600">The surge in online shopping necessitates advanced warehouse and logistics automation.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                 <div class="bg-white p-6 rounded-lg shadow-md border border-stone-200">
+                    <h3 class="text-2xl font-bold text-center mb-6 text-stone-800">Country Spotlight</h3>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="md:w-1/3">
+                            <label for="country-selector" class="block text-sm font-medium text-stone-700 mb-2">Select a country to learn more:</label>
+                            <select id="country-selector" class="w-full bg-white border border-stone-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500">
+                            </select>
+                        </div>
+                        <div id="country-spotlight-content" class="md:w-2/3 bg-stone-100 p-6 rounded-lg border border-stone-200">
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+            
+            <section id="vendor-hub" class="tab-content">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold tracking-tight text-stone-900">Global Providers & Solutions Hub</h2>
+                    <p class="mt-4 text-lg text-stone-600">This section provides a comprehensive look at the leading global automation providers active in Southeast Asia. Click on any logo to explore their core offerings, software solutions, and strategic activities in the region. These companies are pivotal in shaping the technological landscape.</p>
+                </div>
+                <div id="vendor-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                </div>
+            </section>
+
+            <section id="integrator-network" class="tab-content">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold tracking-tight text-stone-900">Regional System Integrator Network</h2>
+                    <p class="mt-4 text-lg text-stone-600">System integrators are crucial partners, bridging the gap between global technology and local industry needs. Use the filter below to discover prominent integrators in each Southeast Asian country and learn about their specializations and key vendor partnerships.</p>
+                </div>
+                <div class="mb-8">
+                    <label for="integrator-country-filter" class="block text-sm font-medium text-stone-700">Filter by Country:</label>
+                    <select id="integrator-country-filter" class="mt-1 block w-full md:w-1/3 pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md">
+                    </select>
+                </div>
+                <div id="integrator-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+
+            <section id="success-stories" class="tab-content">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold tracking-tight text-stone-900">Success Stories & Case Studies</h2>
+                    <p class="mt-4 text-lg text-stone-600">Explore real-world examples of how industrial automation is delivering tangible results across Southeast Asia. Filter these case studies by industry to see the measurable impact on efficiency, productivity, and sustainability.</p>
+                </div>
+                <div class="mb-8 flex flex-wrap justify-center gap-2">
+                    <button class="case-study-filter-btn active bg-teal-600 text-white px-4 py-2 rounded-full text-sm font-medium" data-filter="all">All Industries</button>
+                </div>
+                <div id="case-study-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+
+            <section id="strategic-guide" class="tab-content">
+                 <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold tracking-tight text-stone-900">Strategic Guide for Automation</h2>
+                    <p class="mt-4 text-lg text-stone-600">Navigating the automation landscape requires a strategic approach. This guide distills the report's key recommendations on selecting partners, understanding future trends, and overcoming implementation challenges to help you make informed decisions.</p>
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm border border-stone-200">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left p-6">
+                            <span class="text-xl font-semibold text-stone-800">Criteria for Selecting an Automation Partner</span>
+                            <span class="accordion-icon text-2xl text-teal-600 transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                            <div id="partner-criteria-content" class="p-6 pt-0 text-stone-600"></div>
+                        </div>
+                    </div>
+                     <div class="bg-white rounded-lg shadow-sm border border-stone-200">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left p-6">
+                            <span class="text-xl font-semibold text-stone-800">Emerging Trends & Future Growth Areas</span>
+                            <span class="accordion-icon text-2xl text-teal-600 transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                             <div id="trends-content" class="p-6 pt-0 text-stone-600"></div>
+                        </div>
+                    </div>
+                     <div class="bg-white rounded-lg shadow-sm border border-stone-200">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left p-6">
+                            <span class="text-xl font-semibold text-stone-800">Implementation Challenges & Best Practices</span>
+                            <span class="accordion-icon text-2xl text-teal-600 transform transition-transform">+</span>
+                        </button>
+                        <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                             <div id="challenges-content" class="p-6 pt-0 text-stone-600"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md border border-stone-200 mt-12">
+                    <h3 class="text-2xl font-bold text-center mb-6 text-stone-800">Ask Gemini for More Insights ✨</h3>
+                    <div class="mb-4">
+                        <label for="gemini-prompt" class="block text-sm font-medium text-stone-700 mb-2">Ask a question about industrial automation in Southeast Asia:</label>
+                        <textarea id="gemini-prompt" class="w-full p-3 border border-stone-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500" rows="4" placeholder="e.g., What are the biggest opportunities for automation in the F&B sector in Vietnam?"></textarea>
+                    </div>
+                    <button id="ask-gemini-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-md hover:bg-teal-700 transition-colors duration-300">Ask Gemini ✨</button>
+                    <div id="gemini-response-area" class="mt-6 p-4 bg-stone-100 rounded-lg border border-stone-200 hidden">
+                        <p id="gemini-loading" class="text-stone-600 text-center hidden">Loading response...</p>
+                        <p id="gemini-response" class="text-stone-800"></p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    
+    <div id="vendor-modal" class="modal-bg">
+        <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-lg shadow-2xl max-h-[90vh] overflow-y-auto modal-content">
+            <div id="modal-content-body" class="p-6 sm:p-8">
+            </div>
+            <button id="modal-close-btn" class="absolute top-4 right-4 text-stone-500 hover:text-stone-800 text-3xl">&times;</button>
+        </div>
+    </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const appData = {
+        marketData: {
+            growth: {
+                years: [2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032],
+                values: [1.4, 1.5, 1.61, 1.73, 1.85, 1.98, 2.12, 2.3]
+            },
+            countries: [
+                {
+                    name: "Singapore",
+                    characteristic: "Holds the largest market share, driven by a robust manufacturing sector, strong economy, and significant investment in Industry 4.0. Serves as a regional innovation hub with smart factory centers."
+                },
+                {
+                    name: "Indonesia",
+                    characteristic: "E-commerce is a primary driver for warehouse automation. The nation's logistics vision for 2025 focuses on creating locally integrated and globally connected supply chain systems."
+                },
+                {
+                    name: "Malaysia",
+                    characteristic: "Strong focus on transforming factories into 'smart factories' with end-to-end automation projects, often in partnership with global vendors. Key base for major automation players."
+                },
+                {
+                    name: "Thailand",
+                    characteristic: "Market is addressing both modernization of legacy systems and adoption of new IoT technologies. Established players offer deep expertise in system integration and upgrades for Industry 4.0."
+                },
+                {
+                    name: "Philippines",
+                    characteristic: "Hosts regional offices for major global vendors. Automation adoption is evident in critical infrastructure like power generation, implemented through local partners and distributors."
+                },
+                {
+                    name: "Vietnam",
+                    characteristic: "A rapidly industrializing market leveraging global expertise for large-scale manufacturing projects, like in the automotive sector. Shows a strong push towards software-driven automation."
+                }
+            ]
+        },
+        vendors: [
+            { id: 'abb', name: 'ABB Ltd.', offerings: 'Robotics, Process Control Systems, MES', software: 'OmniCore™, MES Suite', sea_focus: 'Singapore (frontrunner since 1971), key infrastructure projects (Marina Bay Cooling, National Stadium).', strategy: 'Comprehensive solutions, energy efficiency, large-scale manufacturing.' },
+            { id: 'rockwell', name: 'Rockwell Automation Inc.', offerings: 'PLCs, PACs, DCS, MES', software: 'FactoryTalk Suite, Studio 5000, PlantPAx', sea_focus: 'Offices & Training Centers across SEA. HoST is exclusive Singapore distributor.', strategy: 'Cost-effective solutions, industry-specific focus (F&B, automotive), integrated architecture.' },
+            { id: 'siemens', name: 'Siemens AG', offerings: 'PLCs, SCADA, HMI, MOM, AI Agents', software: 'Totally Integrated Automation (TIA) Portal, Siemens Xcelerator', sea_focus: 'Smart Factory Innovation Centre (Singapore), talent training (Malaysia), VinFast project (Vietnam).', strategy: 'Digitalized automation, integrated engineering, AI-powered solutions, Industry 4.0 leadership.' },
+            { id: 'schneider', name: 'Schneider Electric SE', offerings: 'Energy Management, Automation Systems, MES', software: 'EcoStruxure Suite, AVEVA Software', sea_focus: 'Solutions for Marina Bay Sands (SG), Air Selangor (MY), Wilo Indonesia (ID).', strategy: 'Agnostic software, sustainability, energy efficiency, open automation (IEC 61499).' },
+            { id: 'yokogawa', name: 'Yokogawa Electric Corporation', offerings: 'DCS, Process Control, MES', software: 'STARDOM, OpreX solutions', sea_focus: 'Global IA HQ & R&D center in Singapore. Projects with Tuas Power & PUB.', strategy: 'Engineering efficiency, software reliability, process automation, sustainability.' },
+            { id: 'emerson', name: 'Emerson Electric Co.', offerings: 'Control Software, Edge Technology, SCADA, MES', software: 'Movicon.NExT, Syncade, AspenTech', sea_focus: 'Solutions Center (Singapore). Case studies in power (Philippines) & O&G (Indonesia).', strategy: 'Floor-to-cloud solutions, autonomous operations, predictive maintenance.' },
+            { id: 'mitsubishi', name: 'Mitsubishi Electric Corporation', offerings: 'PLCs, Motion Control, Robotics, MES', software: 'MELSEC series (GX Works3), MELFA', sea_focus: 'FA Centers in Singapore, Malaysia, Indonesia. Carbon reduction initiatives in Thailand.', strategy: 'TCO reduction, intuitive programming, high-speed control, cybersecurity.' },
+            { id: 'omron', name: 'OMRON Corporation', offerings: 'PLCs, Robotics, Machine Vision, IIoT', software: 'Sysmac Studio, Sysmac Machine Control', sea_focus: 'Automation Center for Logistics (Singapore), CO2 reduction in Malaysia.', strategy: 'Integrated automation platform, human-machine harmony, AI-driven systems.' }
+        ],
+        integrators: [
+            { country: 'Singapore', name: 'MMI Systems', spec: 'Custom proprietary automation, test systems, precision handling, AI machine vision.', partners: 'N/A' },
+            { country: 'Singapore', name: 'Exxel Technology', spec: 'Industrial control systems, electrical design, PLC/HMI/SCADA programming.', partners: 'N/A' },
+            { country: 'Singapore', name: 'HoST', spec: 'Industrial hardware & software distribution, end-to-end solutions.', partners: 'Rockwell Automation (Exclusive)' },
+            { country: 'Malaysia', name: 'DNC Automation', spec: 'Industry 4.0 transformation, smart factories, robotic solutions.', partners: 'Siemens' },
+            { country: 'Malaysia', name: 'ProStrain Technologies', spec: 'Turnkey automation, custom testing machines, drives, motion control.', partners: 'N/A' },
+            { country: 'Thailand', name: 'Delta Electronics', spec: 'Factory, machine, and process automation solutions with strong R&D.', partners: 'N/A' },
+            { country: 'Thailand', name: 'Precision Control', spec: 'System integration, migration & upgrades of legacy systems, SCADA, IoT integration.', partners: 'Honeywell, Rockwell, Siemens, etc.' },
+            { country: 'Indonesia', name: 'PT. Era Cakrawala Indonesia (ECI)', spec: 'Industrial control systems (PLC, DCS, SCADA), IoT compatibility.', partners: 'ABB, Schneider, Siemens' },
+            { country: 'Indonesia', name: 'kitameraki', spec: 'Data analytics, KPI dashboards, automation of report processes.', partners: 'N/A (IT focus)' },
+            { country: 'Vietnam', name: 'New Ocean Manufacturing', spec: 'Machine vision solutions for quality control (datecode, cap inspection).', partners: 'Rockwell Automation, Wonderware' },
+            { country: 'Vietnam', name: 'Newwave Solutions', spec: 'Custom software development, cloud consulting, BI & Big Data.', partners: 'N/A (IT focus)' },
+        ],
+        caseStudies: [
+            { industry: 'Automotive', country: 'Vietnam', customer: 'VinFast', result: 'Achieved car production in 21 months (half the average time) using Siemens\' TIA Portal and integrated portfolio.', benefit: 'speed' },
+            { industry: 'Automotive', country: 'Thailand', customer: 'Thai Summit', result: 'Nearly 80% decrease in daily downtime and 70-112% increase in throughput with Rockwell\'s Plex MES.', benefit: 'downtime' },
+            { industry: 'Oil & Gas', country: 'Philippines', customer: 'Major Power Producer', result: 'Reduced planned outage from 5 days to 1, unlocking $346K revenue with Emerson\'s solutions.', benefit: 'downtime' },
+            { industry: 'Oil & Gas', country: 'Indonesia', customer: 'Offshore E&P Company', result: 'Achieved 17.8% production gain using Emerson\'s DeltaV SaaS SCADA for gas lift optimization.', benefit: 'efficiency' },
+            { industry: 'Pharmaceuticals', country: 'Vietnam', customer: 'Pharbaco', result: 'Achieved GMP-EU compliance and 45% energy reduction with Rockwell Automation solutions.', benefit: 'energy' },
+            { industry: 'Consumer Goods', country: 'Singapore', customer: 'Sanwa Group', result: 'Doubled production output and reduced labor by 50%+ with Schneider Electric\'s EcoStruxure.', benefit: 'efficiency' },
+            { industry: 'F&B', country: 'Global', customer: 'TMCI Padovan', result: '30% reduction in batch processing errors and 20% energy cost reduction with Emerson\'s Movicon.NExT.', benefit: 'energy' },
+            { industry: 'Infrastructure', country: 'Indonesia', customer: 'Wilo Indonesia', result: 'Achieved 20% energy reduction and 25% less downtime in dewatering systems with Schneider Electric.', benefit: 'downtime' }
+        ],
+        strategicGuide: {
+            partnerCriteria: [
+                "<b>Integrated Solutions Portfolio:</b> Prioritize providers offering comprehensive, unified platforms (PLC, SCADA, MES, AI).",
+                "<b>Regional Presence & Local Support:</b> Opt for partners with strong local offices, training, and support networks.",
+                "<b>Industry-Specific Expertise:</b> Look for a proven track record and successful case studies in your specific industry.",
+                "<b>Commitment to Open Standards:</b> Favor solutions adhering to standards like IEC 61131-3 and OPC UA to avoid vendor lock-in.",
+                "<b>Advanced Technology Integration:</b> Evaluate roadmaps for AI, cloud, and robust cybersecurity integration.",
+                "<b>Flexible Commercial Models:</b> Consider adaptable licensing (subscription, tag-based) to align with budgets and scale."
+            ],
+            trends: [
+                "<b>AI and Machine Learning:</b> Growing use for predictive maintenance, advanced quality control, and autonomous operations.",
+                "<b>Cloud-Based Solutions:</b> Expansion for remote monitoring, advanced analytics, and scalable data management.",
+                "<b>Enhanced Cybersecurity:</b> Increased focus on protecting critical OT environments with standards like IEC 62443.",
+                "<b>Robotics and Cobots:</b> Significant growth in collaborative robots driven by rising labor costs and flexibility needs.",
+                "<b>Sustainability as a Driver:</b> Automation solutions that improve energy efficiency and reduce emissions are gaining prominence."
+            ],
+            challenges: `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-lg mb-2 text-rose-600">Key Challenges</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>High initial investment costs.</li>
+                            <li>Complexity of integrating new tech with legacy systems.</li>
+                            <li>Shortage of skilled workers and engineers.</li>
+                            <li>Growing cybersecurity risks from increased connectivity.</li>
+                            <li>Managing and analyzing massive data volumes.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-lg mb-2 text-teal-600">Best Practices</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Adopt a phased, modular implementation approach.</li>
+                            <li>Form strategic partnerships with experienced vendors/integrators.</li>
+                            <li>Invest heavily in workforce training and upskilling.</li>
+                            <li>Use small-scale pilot projects to validate solutions.</li>
+                            <li>Define clear KPIs to measure ROI.</li>
+                            <li>Prioritize cybersecurity from the design phase.</li>
+                            <li>Leverage open standards to ensure interoperability.</li>
+                        </ul>
+                    </div>
+                </div>
+            `
+        }
+    };
+
+    function setupNavigation() {
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mobileNav = document.getElementById('mobile-nav');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function switchTab(targetId) {
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            const activeTab = document.getElementById(targetId);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${targetId}`);
+            });
+            if (mobileNav.value !== targetId) {
+                mobileNav.value = targetId;
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                switchTab(targetId);
+            });
+        });
+
+        mobileNav.addEventListener('change', function() {
+            switchTab(this.value);
+        });
+
+        switchTab('market-overview');
+    }
+
+    function renderMarketGrowthChart() {
+        const ctx = document.getElementById('marketGrowthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: appData.marketData.growth.years,
+                datasets: [{
+                    label: 'Market Size (USD Billion)',
+                    data: appData.marketData.growth.values,
+                    borderColor: '#0f766e',
+                    backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'USD Billions' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` Market Size: $${context.parsed.y} Billion`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function setupCountrySpotlight() {
+        const selector = document.getElementById('country-selector');
+        const contentDiv = document.getElementById('country-spotlight-content');
+
+        appData.marketData.countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.name;
+            option.textContent = country.name;
+            selector.appendChild(option);
+        });
+
+        function updateContent(countryName) {
+            const country = appData.marketData.countries.find(c => c.name === countryName);
+            if (country) {
+                contentDiv.innerHTML = `
+                    <h4 class="font-bold text-xl mb-2 text-stone-800">${country.name}</h4>
+                    <p class="text-stone-600">${country.characteristic}</p>
+                `;
+            }
+        }
+
+        selector.addEventListener('change', (e) => updateContent(e.target.value));
+        updateContent(appData.marketData.countries[0].name);
+    }
+    
+    function renderVendorGrid() {
+        const grid = document.getElementById('vendor-grid');
+        grid.innerHTML = appData.vendors.map(vendor => `
+            <div class="vendor-card bg-white p-4 rounded-lg shadow-sm border border-stone-200 text-center cursor-pointer hover:shadow-lg hover:border-teal-400 transition-all duration-300" data-vendor-id="${vendor.id}">
+                <div class="h-16 w-full bg-contain bg-no-repeat bg-center" style="background-image: url('https://logo.clearbit.com/${vendor.name.toLowerCase().replace(/\s/g,'').replace('ltd.','').replace('inc.','').replace('ag','').replace('se','').replace('corporation','').replace('electricco.','').replace('.','')}.com')"></div>
+                <p class="mt-4 font-semibold text-stone-700">${vendor.name}</p>
+            </div>
+        `).join('');
+    }
+    
+    function setupVendorModal() {
+        const modal = document.getElementById('vendor-modal');
+        const modalContentBody = document.getElementById('modal-content-body');
+        const closeModalBtn = document.getElementById('modal-close-btn');
+
+        document.getElementById('vendor-grid').addEventListener('click', function(e) {
+            const card = e.target.closest('.vendor-card');
+            if (card) {
+                const vendorId = card.dataset.vendorId;
+                const vendor = appData.vendors.find(v => v.id === vendorId);
+                if (vendor) {
+                    modalContentBody.innerHTML = `
+                        <h3 class="text-3xl font-bold mb-2 text-stone-900">${vendor.name}</h3>
+                        <p class="text-lg text-teal-600 font-semibold mb-6">${vendor.strategy}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                            <div class="bg-stone-100 p-4 rounded-lg">
+                                <h4 class="font-bold text-stone-800 mb-2">Core Offerings</h4>
+                                <p class="text-stone-600">${vendor.offerings}</p>
+                            </div>
+                            <div class="bg-stone-100 p-4 rounded-lg">
+                                <h4 class="font-bold text-stone-800 mb-2">Key Software Suites</h4>
+                                <p class="text-stone-600">${vendor.software}</p>
+                            </div>
+                            <div class="bg-stone-100 p-4 rounded-lg md:col-span-2">
+                                <h4 class="font-bold text-stone-800 mb-2">Notable Southeast Asia Focus</h4>
+                                <p class="text-stone-600">${vendor.sea_focus}</p>
+                            </div>
+                        </div>
+                    `;
+                    modal.style.display = 'block';
+                    setTimeout(() => modal.classList.add('open'), 10);
+                }
+            }
+        });
+
+        function closeModal() {
+            modal.classList.remove('open');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+    
+    function setupIntegratorNetwork() {
+        const filter = document.getElementById('integrator-country-filter');
+        const grid = document.getElementById('integrator-grid');
+        const countries = [...new Set(appData.integrators.map(i => i.country))];
+
+        countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            filter.appendChild(option);
+        });
+
+        function renderIntegrators(country) {
+            const filteredIntegrators = appData.integrators.filter(i => i.country === country);
+            grid.innerHTML = filteredIntegrators.map(integrator => `
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 flex flex-col">
+                    <h4 class="text-xl font-bold text-stone-800">${integrator.name}</h4>
+                    <p class="text-teal-600 font-medium mb-3">Partners: ${integrator.partners}</p>
+                    <p class="text-stone-600 flex-grow">${integrator.spec}</p>
+                </div>
+            `).join('');
+        }
+
+        filter.addEventListener('change', e => renderIntegrators(e.target.value));
+        renderIntegrators(countries[0]);
+    }
+    
+    function setupSuccessStories() {
+        const filterContainer = document.querySelector('.case-study-filter-btn').parentElement;
+        const grid = document.getElementById('case-study-grid');
+        const industries = [...new Set(appData.caseStudies.map(cs => cs.industry))];
+
+        industries.forEach(industry => {
+            const button = document.createElement('button');
+            button.className = 'case-study-filter-btn bg-white text-stone-700 px-4 py-2 rounded-full text-sm font-medium border border-stone-300';
+            button.dataset.filter = industry;
+            button.textContent = industry;
+            filterContainer.appendChild(button);
+        });
+        
+        function renderCaseStudies(filter) {
+            const filteredStudies = filter === 'all' 
+                ? appData.caseStudies 
+                : appData.caseStudies.filter(cs => cs.industry === filter);
+            
+            grid.innerHTML = filteredStudies.map(study => `
+                <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden flex flex-col">
+                    <div class="p-6 flex-grow">
+                        <p class="text-sm font-semibold text-teal-600 uppercase">${study.industry} | ${study.country}</p>
+                        <h4 class="text-lg font-bold text-stone-800 mt-1">${study.customer}</h4>
+                        <p class="text-stone-600 mt-2">${study.result}</p>
+                    </div>
+                    <div class="bg-stone-100 p-4 text-center">
+                        <span class="font-bold text-teal-700">Key Benefit: ${study.benefit.charAt(0).toUpperCase() + study.benefit.slice(1)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        filterContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('case-study-filter-btn')) {
+                filterContainer.querySelector('.active').classList.remove('active', 'bg-teal-600', 'text-white');
+                filterContainer.querySelector('.active')?.classList.add('bg-white', 'text-stone-700');
+                e.target.classList.add('active', 'bg-teal-600', 'text-white');
+                e.target.classList.remove('bg-white', 'text-stone-700');
+                renderCaseStudies(e.target.dataset.filter);
+            }
+        });
+
+        renderCaseStudies('all');
+    }
+
+    function setupStrategicGuide() {
+        document.getElementById('partner-criteria-content').innerHTML = `
+            <ul class="list-disc list-inside space-y-3">${appData.strategicGuide.partnerCriteria.map(item => `<li>${item}</li>`).join('')}</ul>`;
+        document.getElementById('trends-content').innerHTML = `
+            <ul class="list-disc list-inside space-y-3">${appData.strategicGuide.trends.map(item => `<li>${item}</li>`).join('')}</ul>`;
+        document.getElementById('challenges-content').innerHTML = appData.strategicGuide.challenges;
+
+        const accordions = document.querySelectorAll('.accordion-toggle');
+        accordions.forEach(accordion => {
+            accordion.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('.accordion-icon');
+                
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    icon.classList.remove('rotate-45');
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.classList.add('rotate-45');
+                }
+            });
+        });
+    }
+
+    async function askGemini() {
+        const promptInput = document.getElementById('gemini-prompt');
+        const responseArea = document.getElementById('gemini-response-area');
+        const loadingIndicator = document.getElementById('gemini-loading');
+        const geminiResponse = document.getElementById('gemini-response');
+        const askButton = document.getElementById('ask-gemini-btn');
+
+        const userPrompt = promptInput.value.trim();
+        if (!userPrompt) {
+            geminiResponse.textContent = "Please enter a question.";
+            responseArea.classList.remove('hidden');
+            return;
+        }
+
+        responseArea.classList.remove('hidden');
+        loadingIndicator.classList.remove('hidden');
+        geminiResponse.textContent = '';
+        askButton.disabled = true;
+        askButton.textContent = 'Asking Gemini...';
+
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: `You are an expert on industrial automation in Southeast Asia. Based on your knowledge, answer the following question: ${userPrompt}` }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                geminiResponse.textContent = text;
+            } else {
+                geminiResponse.textContent = "Sorry, I couldn't get a response. Please try again.";
+                console.error("Gemini API response structure unexpected:", result);
+            }
+        } catch (error) {
+            geminiResponse.textContent = "An error occurred while fetching the response. Please check your network connection or try again later.";
+            console.error("Error calling Gemini API:", error);
+        } finally {
+            loadingIndicator.classList.add('hidden');
+            askButton.disabled = false;
+            askButton.textContent = 'Ask Gemini ✨';
+        }
+    }
+
+    document.getElementById('ask-gemini-btn').addEventListener('click', askGemini);
+
+    setupNavigation();
+    renderMarketGrowthChart();
+    setupCountrySpotlight();
+    renderVendorGrid();
+    setupVendorModal();
+    setupIntegratorNetwork();
+    setupSuccessStories();
+    setupStrategicGuide();
+});
+</script>
+
 </body>
 </html>
