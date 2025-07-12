@@ -8,9 +8,652 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Additional styles and JavaScript omitted for brevity -->
+    <!-- Chosen Palette: Warm Stone & Amber -->
+    <!-- Application Structure Plan: A non-linear, single-page dashboard design with a sticky top navigation bar allowing users to jump between thematic sections: Overview, Career Trajectory, Digital Worlds (Blogs & Books), and Core Philosophy. This structure was chosen to empower user-led exploration over passive, linear reading. It breaks down the dense report into digestible, interactive modules (like clickable cards for career roles and blogs), which is more engaging and improves usability by allowing users to focus on the aspects of Goh's profile that interest them most. -->
+    <!-- Visualization & Content Choices: 
+        - Professional Roles: Report Info -> Organize/Inform -> Interactive Cards (HTML/CSS/JS) -> Click to expand details -> Justification: More dynamic and less static than a simple table, encouraging user interaction.
+        - Blogging Portfolio: Report Info -> Organize/Inform -> Interactive Grid of Cards (HTML/CSS/JS) -> Hover/click for details -> Justification: Provides a visually appealing gallery of his work, inviting exploration.
+        - Core Philosophy: Report Info -> Inform -> Stylized Quote Blocks & Keyword Tags (HTML/CSS) -> Justification: Breaks down complex ideas into visually distinct, memorable snippets.
+        - Follower Count: Report Info -> Inform -> "Key Metric" Card (HTML/CSS) -> Justification: Elevates the single piece of quantitative data for quick insight.
+        - New: Ask Tz'en Long a Question (Overview): Report Info -> Inform/Engage -> Text Input & Button (HTML/CSS/JS) -> LLM-powered response -> Justification: Provides a direct, conversational way to interact with the profile information.
+        - New: Explore Sapien Manifesto Themes (Digital Worlds): Report Info -> Inform -> Button (HTML/CSS/JS) -> LLM-powered expansion on themes -> Justification: Offers deeper insight into the book's complex topics.
+        - New: Role Insight (Career Section): Report Info -> Inform/Analyze -> Button (HTML/CSS/JS) -> LLM-powered insight into role significance -> Justification: Adds an analytical layer to career exploration.
+        - New: Expand on a Theme (Philosophy Section): Report Info -> Inform/Deep Dive -> Clickable Tag (HTML/CSS/JS) -> LLM-powered explanation of theme approach -> Justification: Provides contextual understanding of how his philosophy applies to specific interests.
+        - Library/Method: Vanilla JS for interactions, Tailwind CSS for all styling. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+            color: #44403c; /* stone-700 */
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #d97706; /* amber-600 */
+            border-bottom-color: #d97706; /* amber-600 */
+        }
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flip:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        .tag {
+            display: inline-block;
+            background-color: #e7e5e4; /* stone-200 */
+            color: #78716c; /* stone-500 */
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+            cursor: pointer; /* Make tags clickable */
+        }
+        .tag:hover {
+            background-color: #d97706; /* amber-600 */
+            color: white;
+        }
+        .section-fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .section-fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 0.75rem;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d97706;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-    <!-- Body content omitted for brevity -->
+<body class="antialiased">
+
+    <header class="bg-stone-100/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold text-stone-800">
+                    Goh Tz'en Long
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#overview" class="nav-link">Overview</a>
+                    <a href="#career" class="nav-link">Career</a>
+                    <a href="#digital-worlds" class="nav-link">Digital Worlds</a>
+                    <a href="#philosophy" class="nav-link">Philosophy</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-stone-200 border border-stone-300 text-stone-700 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block w-full p-2.5">
+                        <option value="#overview">Overview</option>
+                        <option value="#career">Career</option>
+                        <option value="#digital-worlds">Digital Worlds</option>
+                        <option value="#philosophy">Philosophy</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-16">
+
+        <section id="overview" class="mb-16 md:mb-24 min-h-[60vh] flex items-center section-fade-in">
+            <div class="w-full">
+                <h1 class="text-4xl md:text-6xl font-bold text-stone-900 leading-tight">A Digital Innovator, Writer, and Editor</h1>
+                <p class="mt-4 md:mt-6 text-lg md:text-xl text-stone-600 max-w-3xl">
+                    This interactive profile explores the multifaceted work of Goh Tz'en Long, a Singapore-based creative force. Delve into his professional journey, explore his avant-garde digital projects, and understand the core philosophies that drive his unique contributions to technology, art, and culture.
+                </p>
+                <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-stone-800 text-lg">Key Roles</h3>
+                        <p class="text-stone-600 mt-1">Editor, Tech Writer, Product Consultant, Guest Speaker</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-stone-800 text-lg">Online Following</h3>
+                        <p class="text-amber-600 text-3xl font-bold mt-2">400+</p>
+                        <p class="text-stone-500 text-sm">active followers on Medium</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-stone-800 text-lg">Primary Focus</h3>
+                        <p class="text-stone-600 mt-1">The dialectics of technology, culture, art, and communication.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 p-6 bg-amber-50 rounded-xl shadow-md border border-amber-200">
+                    <h3 class="text-2xl font-bold text-stone-800 mb-4">✨ Ask Tz'en Long a Question</h3>
+                    <p class="text-stone-600 mb-4">Curious about something specific? Ask a question about his work, interests, or philosophy, and get an AI-generated response based on his profile.</p>
+                    <input type="text" id="user-question" placeholder="e.g., What inspired your blog 'neurolingus'?" class="w-full p-3 rounded-lg border border-stone-300 focus:ring-amber-500 focus:border-amber-500 text-stone-700 bg-white">
+                    <button id="ask-question-btn" class="mt-4 px-6 py-3 bg-amber-600 text-white rounded-full font-semibold shadow-md hover:bg-amber-700 transition-colors">Ask Question</button>
+                    <div id="question-response" class="mt-4 p-4 bg-white rounded-lg text-stone-700 hidden">
+                        <p class="font-bold mb-2">Tz'en Long says:</p>
+                        <p id="response-text"></p>
+                        <div id="response-loading" class="loading-spinner hidden mt-4"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="career" class="mb-16 md:mb-24 section-fade-in">
+            <h2 class="text-3xl font-bold text-stone-800 mb-2">Career Trajectory</h2>
+            <p class="text-lg text-stone-600 max-w-3xl mb-12">
+                Goh Tz'en Long's career is a blend of specialized media roles and versatile freelance expertise. His path demonstrates a unique ability to bridge technical industries with creative and intellectual discourse. Explore his key professional roles below.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 transform hover:-translate-y-2 border-t-4 border-amber-500 flex flex-col justify-between">
+                    <div>
+                        <div class="text-2xl mb-3">💼</div>
+                        <h3 class="font-bold text-xl text-stone-900">Editor</h3>
+                        <p class="text-stone-500 mb-3">Asia Pacific Metalworking Equipment News</p>
+                        <p class="text-stone-600 text-sm">Leads editorial direction in a specialized trade publication, showcasing deep industry-specific knowledge.</p>
+                    </div>
+                    <button class="generate-role-insight-btn mt-4 px-4 py-2 bg-amber-600 text-white rounded-full font-semibold text-sm hover:bg-amber-700 transition-colors"
+                        data-role="Editor" data-description="Leads editorial direction in a specialized trade publication, showcasing deep industry-specific knowledge.">✨ Role Insight</button>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 transform hover:-translate-y-2 border-t-4 border-amber-500 flex flex-col justify-between">
+                    <div>
+                        <div class="text-2xl mb-3">✍️</div>
+                        <h3 class="font-bold text-xl text-stone-900">Assistant Editor</h3>
+                        <p class="text-stone-500 mb-3">Mediacomz</p>
+                        <p class="text-stone-600 text-sm">Contributed to media production, including participating in high-profile interviews with industry leaders.</p>
+                    </div>
+                    <button class="generate-role-insight-btn mt-4 px-4 py-2 bg-amber-600 text-white rounded-full font-semibold text-sm hover:bg-amber-700 transition-colors"
+                        data-role="Assistant Editor" data-description="Contributed to media production, including participating in high-profile interviews with industry leaders.">✨ Role Insight</button>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 transform hover:-translate-y-2 border-t-4 border-amber-500 flex flex-col justify-between">
+                    <div>
+                        <div class="text-2xl mb-3">💡</div>
+                        <h3 class="font-bold text-xl text-stone-900">Freelance Consultant</h3>
+                        <p class="text-stone-500 mb-3">Tech & Product</p>
+                        <p class="text-stone-600 text-sm">Engaged in hands-on software digitization, product testing, and demonstration, bridging theory with practice.</p>
+                    </div>
+                    <button class="generate-role-insight-btn mt-4 px-4 py-2 bg-amber-600 text-white rounded-full font-semibold text-sm hover:bg-amber-700 transition-colors"
+                        data-role="Freelance Consultant" data-description="Engaged in hands-on software digitization, product testing, and demonstration, bridging theory with practice.">✨ Role Insight</button>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 transform hover:-translate-y-2 border-t-4 border-amber-500 flex flex-col justify-between">
+                    <div>
+                        <div class="text-2xl mb-3">🗣️</div>
+                        <h3 class="font-bold text-xl text-stone-900">Guest Speaker</h3>
+                        <p class="text-stone-500 mb-3">Seminars & Forums</p>
+                        <p class="text-stone-600 text-sm">Shares analytical insights at public forums, recognized as a thought leader on interdisciplinary topics.</p>
+                    </div>
+                    <button class="generate-role-insight-btn mt-4 px-4 py-2 bg-amber-600 text-white rounded-full font-semibold text-sm hover:bg-amber-700 transition-colors"
+                        data-role="Guest Speaker" data-description="Shares analytical insights at public forums, recognized as a thought leader on interdisciplinary topics.">✨ Role Insight</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="digital-worlds" class="mb-16 md:mb-24 section-fade-in">
+            <h2 class="text-3xl font-bold text-stone-800 mb-2">Digital Worlds: A Creative Portfolio</h2>
+            <p class="text-lg text-stone-600 max-w-3xl mb-12">
+                His creative output lives online, through "avant-garde blogs" that act as social experiments and a published sci-fi novel. This portfolio showcases a polymathic curiosity and a desire to engage audiences in unconventional ways. Hover over the cards to learn more.
+            </p>
+            
+            <h3 class="text-2xl font-semibold text-stone-700 mb-6">The Blogosphere</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Blog Cards -->
+                <div class="h-64 card-flip">
+                    <div class="card-inner">
+                        <div class="card-front bg-white shadow-lg border-t-4 border-sky-500">
+                            <h4 class="text-xl font-bold text-stone-900">opus3D</h4>
+                            <p class="text-stone-500">3D Art & VR</p>
+                        </div>
+                        <div class="card-back bg-sky-800 text-white shadow-lg flex flex-col justify-between p-4">
+                            <p class="text-center text-sm">Explores 3D art, virtual reality, and digital aesthetics with a Southeast Asian focus.</p>
+                            <button class="generate-summary-btn mt-4 px-4 py-2 bg-white text-sky-800 rounded-full font-semibold text-sm hover:bg-sky-100 transition-colors"
+                                data-title="opus3D" data-description="Explores 3D art, virtual reality, and digital aesthetics with a Southeast Asian focus.">✨ Generate Summary</button>
+                            <a href="https://opus3d.wordpress.com" target="_blank" class="mt-2 px-4 py-2 bg-white text-sky-800 rounded-full font-semibold text-sm hover:bg-sky-100 transition-colors">Visit →</a>
+                        </div>
+                    </div>
+                </div>
+                 <div class="h-64 card-flip">
+                    <div class="card-inner">
+                        <div class="card-front bg-white shadow-lg border-t-4 border-rose-500">
+                            <h4 class="text-xl font-bold text-stone-900">neurolingus</h4>
+                            <p class="text-stone-500">Language & Cognition</p>
+                        </div>
+                        <div class="card-back bg-rose-800 text-white shadow-lg flex flex-col justify-between p-4">
+                            <p class="text-center text-sm">An "experiential learning experiment" on how language shapes thought and perception.</p>
+                            <button class="generate-summary-btn mt-4 px-4 py-2 bg-white text-rose-800 rounded-full font-semibold text-sm hover:bg-rose-100 transition-colors"
+                                data-title="neurolingus" data-description="An 'experiential learning experiment' on how language shapes thought and perception.">✨ Generate Summary</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-64 card-flip">
+                    <div class="card-inner">
+                        <div class="card-front bg-white shadow-lg border-t-4 border-indigo-500">
+                            <h4 class="text-xl font-bold text-stone-900">avastars</h4>
+                            <p class="text-stone-500">Culture & Entertainment</p>
+                        </div>
+                        <div class="card-back bg-indigo-800 text-white shadow-lg flex flex-col justify-between p-4">
+                            <p class="text-center text-sm">Dissects popular culture and media's evolution in the digital age.</p>
+                            <button class="generate-summary-btn mt-4 px-4 py-2 bg-white text-indigo-800 rounded-full font-semibold text-sm hover:bg-indigo-100 transition-colors"
+                                data-title="avastars" data-description="Dissects popular culture and media's evolution in the digital age.">✨ Generate Summary</button>
+                            <a href="https://avastars.wordpress.com" target="_blank" class="mt-2 px-4 py-2 bg-white text-indigo-800 rounded-full font-semibold text-sm hover:bg-indigo-100 transition-colors">Visit →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-64 card-flip">
+                    <div class="card-inner">
+                        <div class="card-front bg-white shadow-lg border-t-4 border-emerald-500">
+                            <h4 class="text-xl font-bold text-stone-900">yogajocks</h4>
+                            <p class="text-stone-500">Wellness & Creativity</p>
+                        </div>
+                        <div class="card-back bg-emerald-800 text-white shadow-lg flex flex-col justify-between p-4">
+                            <p class="text-center text-sm">Explores the intersection of fitness, mindfulness, yoga, art, and sustainability.</p>
+                            <button class="generate-summary-btn mt-4 px-4 py-2 bg-white text-emerald-800 rounded-full font-semibold text-sm hover:bg-emerald-100 transition-colors"
+                                data-title="yogajocks" data-description="Explores the intersection of fitness, mindfulness, yoga, art, and sustainability.">✨ Generate Summary</button>
+                            <a href="https://yogajocks.wordpress.com" target="_blank" class="mt-2 px-4 py-2 bg-white text-emerald-800 rounded-full font-semibold text-sm hover:bg-emerald-100 transition-colors">Visit →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-stone-700 mt-16 mb-6">Published Work</h3>
+            <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col md:flex-row items-center gap-8 border border-stone-200">
+                <div class="flex-shrink-0">
+                    <div class="w-32 h-48 bg-stone-800 text-white rounded-lg flex flex-col justify-center items-center p-4 shadow-2xl">
+                        <p class="text-center font-bold text-lg">SAPIEN MANIFESTO</p>
+                        <p class="text-xs mt-4 text-stone-300">Tz'en Long Goh</p>
+                        <p class="text-xs mt-1 text-stone-400">2021</p>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-2xl font-bold text-stone-900">Sapien Manifesto</h4>
+                    <p class="text-amber-600 font-semibold">Sci-Fi Thriller</p>
+                    <p class="mt-2 text-stone-600">An open-access novel set in future smart cities, delving into speculative themes of human cloning, nanotechnology, and genetic 3D printing. This work showcases his ability to translate complex technological ideas into compelling narrative fiction.</p>
+                    <button id="explore-manifesto-themes-btn" class="mt-4 px-4 py-2 bg-amber-600 text-white rounded-full font-semibold text-sm hover:bg-amber-700 transition-colors"
+                        data-themes="human cloning, nanotechnology, genetic 3D printing">✨ Explore Themes</button>
+                    <div id="manifesto-theme-output" class="mt-4 p-4 bg-stone-100 rounded-lg text-stone-700 hidden">
+                        <p class="font-bold mb-2">Theme Exploration:</p>
+                        <p id="manifesto-theme-text"></p>
+                        <div id="manifesto-theme-loading" class="loading-spinner hidden mt-4"></div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="philosophy" class="section-fade-in">
+            <h2 class="text-3xl font-bold text-stone-800 mb-2">Core Philosophy & Interests</h2>
+             <p class="text-lg text-stone-600 max-w-3xl mb-12">
+                Underpinning all of Goh's work is a coherent philosophy centered on knowledge sharing, interdisciplinary exploration, and intellectual curiosity. His interests are not disparate but are unified by a fundamental passion for art as a lens to understand the world.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <blockquote class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-lg">
+                        <p id="philosophy-quote" class="text-xl italic text-stone-700">"A profound belief in the paramount importance of sharing knowledge... and a dedication to creating content that stimulates creativity, promotes artistry, drives innovation, and cultivates intellectual curiosity."</p>
+                    </blockquote>
+                    <p class="mt-4 text-stone-600">This driving philosophy is not just about producing content, but about creating "thought experiments and sensory experiences" for the audience. The goal is transformative: to engage readers on a deeper, experiential level, making his blogs and writings catalysts for personal and intellectual growth.</p>
+                    <button id="generate-scenario-btn" class="mt-6 px-6 py-3 bg-amber-600 text-white rounded-full font-semibold shadow-md hover:bg-amber-700 transition-colors">✨ Philosophy in Action</button>
+                    <div id="scenario-output" class="mt-6 p-4 bg-stone-100 rounded-lg text-stone-700 hidden">
+                        <p class="font-bold mb-2">Hypothetical Scenario:</p>
+                        <p id="scenario-text"></p>
+                        <div id="scenario-loading" class="loading-spinner hidden mt-4"></div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold text-stone-700 mb-4">Unifying Themes</h3>
+                    <p class="text-stone-600 mb-6">His varied pursuits are connected by a passion for exploring the complex relationships between different domains. Art, in particular, serves as a core methodology he applies across all his intellectual endeavors.</p>
+                    <div class="flex flex-wrap gap-3" id="theme-tags-container">
+                        <span class="tag" data-theme="Technology">Technology</span>
+                        <span class="tag" data-theme="Culture">Culture</span>
+                        <span class="tag" data-theme="Art">Art</span>
+                        <span class="tag" data-theme="Communication">Communication</span>
+                        <span class="tag" data-theme="Visual Arts">Visual Arts</span>
+                        <span class="tag" data-theme="Existentialism">Existentialism</span>
+                        <span class="tag" data-theme="Digital Aesthetics">Digital Aesthetics</span>
+                        <span class="tag" data-theme="Holistic Wellness">Holistic Wellness</span>
+                        <span class="tag" data-theme="Sustainability">Sustainability</span>
+                    </div>
+                    <div id="theme-elaboration-output" class="mt-6 p-4 bg-stone-100 rounded-lg text-stone-700 hidden">
+                        <p class="font-bold mb-2">Theme Elaboration:</p>
+                        <p id="theme-elaboration-text"></p>
+                        <div id="theme-elaboration-loading" class="loading-spinner hidden mt-4"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-200 mt-16 md:mt-24">
+        <div class="container mx-auto px-6 py-8 text-center text-stone-600">
+            <p>Interactive profile created based on the comprehensive report on Goh Tz'en Long.</p>
+            <p class="text-sm mt-2">This is an illustrative web application. Data is sourced from the provided report.</p>
+        </div>
+    </footer>
+
+    <!-- Custom Modal for Messages -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modalTitle" class="text-xl font-bold mb-4 text-stone-800"></h3>
+            <p id="modalMessage" class="text-stone-700 mb-4"></p>
+            <div id="modalLoading" class="loading-spinner hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+            const generateSummaryButtons = document.querySelectorAll('.generate-summary-btn');
+            const generateScenarioBtn = document.getElementById('generate-scenario-btn');
+            const scenarioOutput = document.getElementById('scenario-output');
+            const scenarioText = document.getElementById('scenario-text');
+            const scenarioLoading = document.getElementById('scenario-loading');
+            const philosophyQuote = document.getElementById('philosophy-quote');
+
+            const userQuestionInput = document.getElementById('user-question');
+            const askQuestionBtn = document.getElementById('ask-question-btn');
+            const questionResponseDiv = document.getElementById('question-response');
+            const responseText = document.getElementById('response-text');
+            const responseLoading = document.getElementById('response-loading');
+
+            const exploreManifestoThemesBtn = document.getElementById('explore-manifesto-themes-btn');
+            const manifestoThemeOutput = document.getElementById('manifesto-theme-output');
+            const manifestoThemeText = document.getElementById('manifesto-theme-text');
+            const manifestoThemeLoading = document.getElementById('manifesto-theme-loading');
+
+            const generateRoleInsightButtons = document.querySelectorAll('.generate-role-insight-btn');
+            const themeTags = document.querySelectorAll('#theme-tags-container .tag');
+            const themeElaborationOutput = document.getElementById('theme-elaboration-output');
+            const themeElaborationText = document.getElementById('theme-elaboration-text');
+            const themeElaborationLoading = document.getElementById('theme-elaboration-loading');
+
+
+            // Modal elements
+            const modal = document.getElementById('myModal');
+            const closeButton = document.querySelector('.close-button');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalLoading = document.getElementById('modalLoading');
+
+            // Function to show modal
+            function showModal(title, message, isLoading = false) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                if (isLoading) {
+                    modalLoading.classList.remove('hidden');
+                } else {
+                    modalLoading.classList.add('hidden');
+                }
+                modal.style.display = 'flex';
+            }
+
+            // Function to hide modal
+            function hideModal() {
+                modal.style.display = 'none';
+            }
+
+            // Close modal when close button is clicked
+            closeButton.addEventListener('click', hideModal);
+
+            // Close modal when clicking outside of the modal content
+            window.addEventListener('click', function(event) {
+                if (event.target == modal) {
+                    hideModal();
+                }
+            });
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const sectionObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+            
+            const navObserverOptions = {
+                root: null,
+                rootMargin: '-50% 0px -50% 0px',
+                threshold: 0
+            };
+
+            const navObserver = new IntersectionObserver((entries) => {
+                 entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                        mobileNav.value = `#${id}`;
+                    }
+                });
+            }, navObserverOptions);
+            
+            sections.forEach(section => {
+                navObserver.observe(section);
+            });
+            
+            mobileNav.addEventListener('change', (e) => {
+                window.location.href = e.target.value;
+            });
+
+            // Function to call Gemini API
+            async function callGeminiAPI(prompt) {
+                showModal('Generating...', 'Please wait while the AI generates the content.', true);
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this in runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        return text;
+                    } else {
+                        console.error('Unexpected API response structure:', result);
+                        return 'Error: Could not generate content. Please try again.';
+                    }
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    return 'Error: Failed to connect to the AI service.';
+                } finally {
+                    // Modal will be hidden by the calling function after displaying result
+                }
+            }
+
+            // Event listeners for blog summary buttons
+            generateSummaryButtons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    const title = this.dataset.title;
+                    const description = this.dataset.description;
+                    const prompt = `Generate a concise, engaging summary (1-2 sentences) for a blog post titled '${title}' which focuses on '${description}'. Focus on the core idea.`;
+                    
+                    const summary = await callGeminiAPI(prompt);
+                    showModal(`Summary for "${title}"`, summary, false);
+                });
+            });
+
+            // Event listener for philosophy scenario button
+            generateScenarioBtn.addEventListener('click', async function() {
+                const philosophyText = philosophyQuote.textContent.trim();
+                const prompt = `Based on the philosophy: '${philosophyText}', generate a short, hypothetical scenario (3-4 sentences) describing how Goh Tz'en Long might apply this philosophy in a new project or collaboration.`;
+                
+                scenarioOutput.classList.remove('hidden');
+                scenarioText.textContent = '';
+                scenarioLoading.classList.remove('hidden');
+                
+                const scenario = await callGeminiAPI(prompt);
+                
+                scenarioLoading.classList.add('hidden');
+                scenarioText.textContent = scenario;
+                hideModal(); // Hide the generating modal once result is displayed in the section
+            });
+
+            // Event listener for "Ask Tz'en Long a Question"
+            askQuestionBtn.addEventListener('click', async function() {
+                const question = userQuestionInput.value.trim();
+                if (!question) {
+                    showModal('Input Required', 'Please enter a question to ask.', false);
+                    return;
+                }
+
+                const profileOverview = `Goh Tz'en Long is a Singapore-based digital innovator, writer, and editor. His key roles include Editor at Asia Pacific Metalworking Equipment News, Assistant Editor at Mediacomz, Freelance Tech & Product Consultant, and Guest Speaker. He has over 400 active followers on Medium. His primary focus is the dialectics of technology, culture, art, and communication. His creative works include blogs like 'opus3D' (3D art, VR, digital aesthetics), 'neurolingus' (language, cognition), 'avastars' (culture, entertainment), and 'yogajocks' (wellness, creativity). He also authored the sci-fi novel 'Sapien Manifesto' exploring human cloning, nanotechnology, and genetic 3D printing. His core philosophy emphasizes sharing knowledge, stimulating creativity, promoting artistry, driving innovation, and cultivating intellectual curiosity, aiming to create thought experiments and sensory experiences.`;
+
+                const prompt = `Based on the following profile information about Goh Tz'en Long, answer the question: "${question}". Respond in the first person, as if you are Goh Tz'en Long. Keep the answer concise (2-4 sentences).
+
+Profile:
+${profileOverview}
+
+Question: "${question}"
+
+Answer:`;
+
+                questionResponseDiv.classList.remove('hidden');
+                responseText.textContent = '';
+                responseLoading.classList.remove('hidden');
+
+                const answer = await callGeminiAPI(prompt);
+                
+                responseLoading.classList.add('hidden');
+                responseText.textContent = answer;
+                hideModal();
+            });
+
+            // Event listener for "Explore Sapien Manifesto Themes"
+            exploreManifestoThemesBtn.addEventListener('click', async function() {
+                const themes = this.dataset.themes; // "human cloning, nanotechnology, genetic 3D printing"
+                const prompt = `Elaborate briefly (2-3 sentences) on one of the following themes from the novel 'Sapien Manifesto': ${themes}. Pick one theme and provide a conceptual insight into it as it might appear in a sci-fi context.`;
+
+                manifestoThemeOutput.classList.remove('hidden');
+                manifestoThemeText.textContent = '';
+                manifestoThemeLoading.classList.remove('hidden');
+
+                const elaboration = await callGeminiAPI(prompt);
+
+                manifestoThemeLoading.classList.add('hidden');
+                manifestoThemeText.textContent = elaboration;
+                hideModal();
+            });
+
+            // Event listeners for "Generate Role Insight" buttons
+            generateRoleInsightButtons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    const role = this.dataset.role;
+                    const description = this.dataset.description;
+                    const prompt = `Given the role of '${role}' with the description '${description}' in Goh Tz'en Long's career, generate a concise (1-2 sentences) insight into the significance or impact of this role on his overall trajectory or expertise.`;
+                    
+                    const insight = await callGeminiAPI(prompt);
+                    showModal(`Insight for "${role}"`, insight, false);
+                });
+            });
+
+            // Event listeners for "Expand on a Theme" tags
+            themeTags.forEach(tag => {
+                tag.addEventListener('click', async function() {
+                    const theme = this.dataset.theme;
+                    const philosophyText = philosophyQuote.textContent.trim(); // Get the core philosophy
+                    const prompt = `Goh Tz'en Long's core philosophy emphasizes sharing knowledge, stimulating creativity, promoting artistry, driving innovation, and cultivating intellectual curiosity. Considering this, how might he approach the theme of '${theme}' in his work? Provide a concise (2-3 sentences) explanation.`;
+                    
+                    themeElaborationOutput.classList.remove('hidden');
+                    themeElaborationText.textContent = '';
+                    themeElaborationLoading.classList.remove('hidden');
+
+                    const elaboration = await callGeminiAPI(prompt);
+
+                    themeElaborationLoading.classList.add('hidden');
+                    themeElaborationText.textContent = elaboration;
+                    hideModal();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
