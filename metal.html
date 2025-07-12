@@ -9,9 +9,467 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Additional style and structure omitted for brevity -->
+    <!-- Chosen Palette: "Warm Neutral Harmony" -->
+    <!-- Application Structure Plan: The application uses a single-page, tabbed navigation structure. The main sections are "Overview," "Metalworking & Processing," "Metrology," and "Metallurgy," mirroring the logical categories from the report. This thematic approach allows users to dive into specific areas of interest directly. The "Overview" section acts as a landing dashboard, presenting high-level takeaways (KPIs and trends) to orient the user. Each subsequent section provides detailed publisher information, using interactive cards and dynamic charts to make complex data (like readership demographics and digital engagement) easily digestible. This structure was chosen to transform a linear report into an exploratory tool, prioritizing user-driven discovery over passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: High-level trends (Digital Shift, Industry 4.0). Goal: Inform. Viz/Method: Key Performance Indicator (KPI) cards. Interaction: None, static display. Justification: Provides a quick, scannable summary of the report's main conclusions.
+        - Report Info: IMNA readership split (Print vs. Digital). Goal: Compare proportions. Viz/Method: Doughnut Chart (Chart.js). Interaction: Tooltips on hover. Justification: A doughnut chart is ideal for showing part-to-whole relationships clearly.
+        - Report Info: IMNA readership by industry. Goal: Compare categories. Viz/Method: Horizontal Bar Chart (Chart.js). Interaction: Tooltips on hover. Justification: Horizontal bars are effective for comparing multiple categories with long labels.
+        - Report Info: Metrology.News global audience. Goal: Compare geographical distribution. Viz/Method: Vertical Bar Chart (Chart.js). Interaction: Tooltips on hover. Justification: A standard bar chart effectively compares quantities across different regions.
+        - Report Info: Publisher details. Goal: Organize & Inform. Viz/Method: Styled HTML cards. Interaction: Content revealed by main navigation clicks. Justification: Cards are a clean, modular way to present structured information for each publisher.
+        - Library/Method: All charts are rendered on <canvas> elements using Chart.js, adhering to the NO SVG constraint.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #334155;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #14B8A6;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .nav-button:not(.active):hover {
+            background-color: #E2E8F0;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .publisher-card {
+             background-color: #ffffff;
+             border-left: 5px solid #14B8A6;
+        }
+    </style>
 </head>
 <body class="antialiased">
-    <!-- Full body content from the original HTML -->
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800">ASEAN Metal Industry Media Landscape</h1>
+            <p class="mt-2 text-lg text-slate-600">An Interactive Analysis of Key Publishers and Editors</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+            <button id="nav-overview" class="nav-button font-semibold py-2 px-4 rounded-full active" onclick="showSection('overview')">Overview & Trends</button>
+            <button id="nav-metalworking" class="nav-button font-semibold py-2 px-4 rounded-full" onclick="showSection('metalworking')">Metalworking & Processing</button>
+            <button id="nav-metrology" class="nav-button font-semibold py-2 px-4 rounded-full" onclick="showSection('metrology')">Metrology</button>
+            <button id="nav-metallurgy" class="nav-button font-semibold py-2 px-4 rounded-full" onclick="showSection('metallurgy')">Metallurgy & Steel</button>
+        </nav>
+
+        <main id="main-content">
+
+            <section id="overview" class="content-section active">
+                <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-3">Welcome to the ASEAN Media Explorer</h2>
+                    <p class="text-slate-600 leading-relaxed">This interactive application synthesizes a detailed report on the key trade media publishers serving the ASEAN metal industries. The manufacturing sector in the region is undergoing rapid transformation, driven by record foreign investment and a strategic shift towards automation. Within this dynamic environment, trade media are essential for disseminating knowledge and fostering connections. Use the navigation tabs above to explore the dominant publications, key editorial leaders, and overarching trends in each specialized sector.
+                    </p>
+                </div>
+
+                <h3 class="text-2xl font-bold text-center text-slate-800 mb-6">Key Industry & Media Trends</h3>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="kpi-card">
+                        <div class="text-4xl font-bold text-teal-600 mb-2">$230B</div>
+                        <h4 class="font-semibold text-lg text-slate-700">Record FDI Inflow</h4>
+                        <p class="text-sm text-slate-500">A surge in foreign direct investment highlights ASEAN's growing importance as a global manufacturing hub, fueling demand for advanced technology and information.</p>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="text-4xl font-bold text-teal-600 mb-2">🚀</div>
+                        <h4 class="font-semibold text-lg text-slate-700">The Digital Shift</h4>
+                        <p class="text-sm text-slate-500">Publishers are aggressively moving to digital-first strategies, leveraging online platforms, social media, and data-driven content to reach a wider, more engaged audience.</p>
+                    </div>
+                     <div class="kpi-card">
+                        <div class="text-4xl font-bold text-teal-600 mb-2">🏭</div>
+                        <h4 class="font-semibold text-lg text-slate-700">Industry 4.0 Focus</h4>
+                        <p class="text-sm text-slate-500">Content across all sectors emphasizes automation, AI, and smart manufacturing, reflecting the industry's strategic push to modernize and boost competitiveness.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="metalworking" class="content-section">
+                 <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-3">Metalworking & Processing Publications</h2>
+                    <p class="text-slate-600 leading-relaxed">
+                        The metalworking and processing sectors in ASEAN are served by highly influential trade publications that act as vital sources for new technologies, market trends, and practical manufacturing solutions. These magazines connect decision-makers across diverse industries, from automotive to aerospace, and are key partners in major regional trade events. Explore the profiles below to understand their reach, focus, and impact.
+                    </p>
+                </div>
+                <div class="space-y-8">
+                    <div class="p-6 rounded-xl shadow-lg publisher-card">
+                        <h3 class="text-xl font-bold text-slate-800">International Metalworking News for Asia (IMNA)</h3>
+                        <p class="text-sm font-semibold text-teal-700 mb-4">Publisher: Ringier Trade Media | Editor: Kathryn Gerardino-Elagio</p>
+                        <p class="text-slate-600 mb-6">A leading bi-monthly publication with a strong digital focus, IMNA delivers practical solutions to improve productivity and reduce costs. Its controlled readership of 45,700 consists of key manufacturing decision-makers, and its content is central to understanding the adoption of Industry 4.0 and carbon-neutral manufacturing in Asia.</p>
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                             <div>
+                                <h4 class="text-lg font-semibold text-center mb-2">Readership Audience (Total: 45,700)</h4>
+                                <div class="chart-container h-64 md:h-72">
+                                    <canvas id="imnaReadershipSplitChart"></canvas>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-center mb-2">Top 5 Reader Industries</h4>
+                                 <div class="chart-container h-64 md:h-72">
+                                    <canvas id="imnaIndustryDemographicsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="p-6 rounded-xl shadow-lg publisher-card">
+                        <h3 class="text-xl font-bold text-slate-800">Asia Pacific Metalworking Equipment News (APMEN)</h3>
+                        <p class="text-sm font-semibold text-teal-700 mb-4">Publisher: C3 Media Pte Ltd | Editor: Goh Tz’en Long</p>
+                        <p class="text-slate-600">Established in 1986, APMEN is recognized as one of the region's most authoritative metalworking trade magazines. With a circulation of 33,500, it is a must-read for professionals in key sectors like automotive, aerospace, and oil & gas. Its deep industry trust is reinforced by its role as a media partner for major regional trade shows.</p>
+                    </div>
+                    <div class="p-6 rounded-xl shadow-lg publisher-card">
+                        <h3 class="text-xl font-bold text-slate-800">Asia Manufacturing Review</h3>
+                        <p class="text-sm font-semibold text-teal-700 mb-4">Publisher: SILICONMEDIA TECHNOLOGIES PVT.LTD. | Editor: Janifha Evangeline</p>
+                        <p class="text-slate-600">This publication provides a broader view of Asia's manufacturing landscape, with a strong focus on the adoption of Industry 4.0 technologies like automation and robotics. While not exclusively a metal industry magazine, its content provides essential context on macro trends that directly impact metal processing and working sectors.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="metrology" class="content-section">
+                <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-3">Metrology Publications</h2>
+                    <p class="text-slate-600 leading-relaxed">
+                        The field of metrology, which is fundamental to quality control and precision manufacturing, is dominated by digitally-native platforms. These outlets provide real-time, global information on the latest technological innovations. For professionals in ASEAN, these platforms are crucial for staying current with global best practices and facilitating the rapid adoption of advanced methodologies, especially as the region embraces automation.
+                    </p>
+                </div>
+                 <div class="p-6 rounded-xl shadow-lg publisher-card">
+                    <h3 class="text-xl font-bold text-slate-800">Metrology.News</h3>
+                    <p class="text-sm font-semibold text-teal-700 mb-4">Publisher: Metrology News Publisher | Publishing Editor: Keith Mills</p>
+                    <p class="text-slate-600 mb-6">Launched in 2016, Metrology.News has quickly become the leading global news site for its sector, providing daily updates. Its editor, Keith Mills, brings over 30 years of global industry experience, ensuring content is technically accurate and highly relevant. The platform has a significant global footprint, making it a key resource for technology transfer into ASEAN.</p>
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                             <h4 class="text-lg font-semibold text-center mb-2">Global Audience Distribution</h4>
+                             <div class="chart-container">
+                                <canvas id="metrologyNewsAudienceChart"></canvas>
+                             </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-2 text-center md:text-left">Key Technology Topics Covered</h4>
+                            <ul class="list-disc list-inside space-y-2 text-slate-600 bg-slate-50 p-4 rounded-lg">
+                                <li>Metrology 4.0 & Smart Manufacturing</li>
+                                <li>Artificial Intelligence & Machine Vision</li>
+                                <li>Advanced Computed Tomography</li>
+                                <li>CMMs with AI Integration</li>
+                                <li>Portable & Automated Inspection</li>
+                                <li>Augmented Reality in Quality Control</li>
+                                <li>Big Data Utilization & Edge Computing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="metallurgy" class="content-section">
+                 <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-3">Metallurgy & Steel Publications</h2>
+                    <p class="text-slate-600 leading-relaxed">
+                       In foundational heavy industries like metallurgy and steel, authority and credibility are paramount. The leading media in this space derive their influence from the deep, long-standing expertise of their leadership and their strong institutional connections. This section explores the key publications and data platforms that provide the foundational knowledge and market intelligence for the ASEAN steel industry.
+                    </p>
+                </div>
+                <div class="space-y-8">
+                    <div class="p-6 rounded-xl shadow-lg publisher-card">
+                        <h3 class="text-xl font-bold text-slate-800">STEEL & METALLURGY</h3>
+                        <p class="text-sm font-semibold text-teal-700 mb-4">Publisher & Editor: Nirmalya Mukherjee</p>
+                        <p class="text-slate-600 mb-6">Established in 1998 and often called "the bible" for steel news, this magazine's authority stems from the 21 years of industry experience of its editor. It boasts a readership of 75,000 influential professionals and has strong collaborations with global and regional bodies, including SEAISI. Its content covers the entire value chain, from mining to production.</p>
+                         <div class="grid place-items-center">
+                            <div>
+                                <h4 class="text-lg font-semibold text-center mb-2">Audience Profile by Role</h4>
+                                <div class="chart-container h-72">
+                                    <canvas id="metallurgyAudienceProfileChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-xl shadow-lg publisher-card">
+                        <h3 class="text-xl font-bold text-slate-800">ASEAN Iron & Steel Journal</h3>
+                        <p class="text-sm font-semibold text-teal-700 mb-4">Publisher: Southeast Asian Iron & Steel Institute (SEAISI)</p>
+                        <p class="text-slate-600">As the publication of a key regional industry institute, this journal is an indispensable and authoritative source. SEAISI provides a suite of critical resources, including a Statistical Yearbook and Country Reports, making it a foundational data provider and central knowledge repository for the ASEAN steel industry. Its authority is solidified by collaborations with leading commercial editors.</p>
+                    </div>
+                    <div class="p-6 rounded-xl shadow-lg publisher-card">
+                        <h3 class="text-xl font-bold text-slate-800">Asian Metal</h3>
+                        <p class="text-sm font-semibold text-teal-700 mb-4">Platform: The World Metal Information Center</p>
+                        <p class="text-slate-600">Asian Metal represents the evolution of trade media. It is not a traditional magazine but a dynamic online data platform providing real-time market prices, industry reports, and trade data. For commodity-driven sectors, this access to timely, accurate market intelligence is often more critical than traditional editorial, making it a vital tool for strategic decision-making.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const sections = {
+            overview: document.getElementById('overview'),
+            metalworking: document.getElementById('metalworking'),
+            metrology: document.getElementById('metrology'),
+            metallurgy: document.getElementById('metallurgy'),
+        };
+
+        const navButtons = {
+            overview: document.getElementById('nav-overview'),
+            metalworking: document.getElementById('nav-metalworking'),
+            metrology: document.getElementById('nav-metrology'),
+            metallurgy: document.getElementById('nav-metallurgy'),
+        };
+        
+        let charts = {};
+
+        function showSection(sectionId) {
+            Object.values(sections).forEach(section => {
+                section.classList.remove('active');
+            });
+            Object.values(navButtons).forEach(button => {
+                button.classList.remove('active');
+            });
+
+            sections[sectionId].classList.add('active');
+            navButtons[sectionId].classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            switch(sectionId) {
+                case 'metalworking':
+                    renderMetalworkingCharts();
+                    break;
+                case 'metrology':
+                    renderMetrologyCharts();
+                    break;
+                case 'metallurgy':
+                    renderMetallurgyCharts();
+                    break;
+            }
+        }
+        
+        function formatLabel(str, maxLen = 16) {
+            if (str.length <= maxLen) return str;
+            const words = str.split(' ');
+            let currentLine = '';
+            const lines = [];
+            for(const word of words) {
+                if ((currentLine + word).length > maxLen) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            }
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const chartDefaultOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#475569',
+                        font: {
+                           family: "'Inter', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1E293B',
+                    titleFont: { size: 14, family: "'Inter', sans-serif" },
+                    bodyFont: { size: 12, family: "'Inter', sans-serif" },
+                    padding: 10,
+                    cornerRadius: 4,
+                    displayColors: true,
+                    boxPadding: 4,
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { 
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif" }
+                    },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: { 
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif" }
+                    },
+                    grid: { color: '#E2E8F0' }
+                }
+            }
+        };
+
+        function renderMetalworkingCharts() {
+            if (!charts.imnaReadershipSplit) {
+                 const ctx1 = document.getElementById('imnaReadershipSplitChart').getContext('2d');
+                 charts.imnaReadershipSplit = new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Digital', 'Print'],
+                        datasets: [{
+                            label: 'Readership',
+                            data: [28500, 17200],
+                            backgroundColor: ['#14B8A6', '#2DD4BF'],
+                            borderColor: '#F8F7F4',
+                            borderWidth: 4,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        ...chartDefaultOptions,
+                        cutout: '60%',
+                        plugins: {
+                             ...chartDefaultOptions.plugins,
+                             legend: { ...chartDefaultOptions.plugins.legend, position: 'right' }
+                        }
+                    }
+                });
+            }
+            
+            if (!charts.imnaIndustryDemographics) {
+                const ctx2 = document.getElementById('imnaIndustryDemographicsChart').getContext('2d');
+                charts.imnaIndustryDemographics = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Auto Parts & Components', 'Electronics Products', 'Fabricated/Formed Metal', 'Machinery & Machine Tools', 'Molds & Dies'],
+                        datasets: [{
+                            label: 'Readership Percentage',
+                            data: [22, 15, 13, 9, 7],
+                            backgroundColor: '#14B8A6',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                       ...chartDefaultOptions,
+                       indexAxis: 'y',
+                       plugins: {
+                         ...chartDefaultOptions.plugins,
+                         legend: { display: false }
+                       },
+                       scales: {
+                           x: { ...chartDefaultOptions.scales.x, grid: { display: true, color: '#E2E8F0' } },
+                           y: { ...chartDefaultOptions.scales.y, grid: { display: false } }
+                       }
+                    }
+                });
+            }
+        }
+        
+        function renderMetrologyCharts() {
+             if (!charts.metrologyNewsAudience) {
+                const ctx = document.getElementById('metrologyNewsAudienceChart').getContext('2d');
+                charts.metrologyNewsAudience = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['USA', 'Germany', 'UK', 'India', 'Japan', 'S. Korea', 'China', 'Others'],
+                        datasets: [{
+                            label: '% of Readership',
+                            data: [29, 10, 8.4, 6.2, 4.4, 1.6, 1.6, 25.1],
+                             backgroundColor: ['#14B8A6', '#2DD4BF', '#5EEAD4', '#99F6E4', '#CCFBF1', '#F0FDFA', '#A7F3D0', '#6EE7B7'],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartDefaultOptions,
+                        plugins: {
+                           ...chartDefaultOptions.plugins,
+                           legend: { display: false }
+                        },
+                         scales: {
+                           x: { ...chartDefaultOptions.scales.x, grid: { display: false } },
+                           y: { ...chartDefaultOptions.scales.y, grid: { display: true, color: '#E2E8F0' } }
+                       }
+                    }
+                });
+            }
+        }
+
+        function renderMetallurgyCharts() {
+            if(!charts.metallurgyAudienceProfile) {
+                const ctx = document.getElementById('metallurgyAudienceProfileChart').getContext('2d');
+                charts.metallurgyAudienceProfile = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['CEO/President/MD', 'VP/GM', 'Purchase/Ops/Sales Mgrs', 'Consultant/Engineer'],
+                        datasets: [{
+                            label: 'Audience Profile',
+                            data: [34, 28, 23, 11],
+                             backgroundColor: ['#0F766E', '#14B8A6', '#5EEAD4', '#99F6E4'],
+                            borderColor: '#F8F7F4',
+                            borderWidth: 4,
+                            hoverOffset: 8
+                        }]
+                    },
+                     options: {
+                        ...chartDefaultOptions,
+                        cutout: '60%',
+                        plugins: {
+                            ...chartDefaultOptions.plugins,
+                            legend: {
+                                ...chartDefaultOptions.plugins.legend,
+                                position: 'bottom',
+                                labels: {
+                                    ...chartDefaultOptions.plugins.legend.labels,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map(function(label, i) {
+                                                const meta = chart.getDatasetMeta(0);
+                                                const ds = data.datasets[0];
+                                                return {
+                                                    text: formatLabel(label),
+                                                    fillStyle: ds.backgroundColor[i],
+                                                    strokeStyle: ds.borderColor[i],
+                                                    lineWidth: ds.borderWidth[i],
+                                                    hidden: isNaN(ds.data[i]) || meta.data[i].hidden,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('overview');
+        });
+    </script>
+
 </body>
 </html>
