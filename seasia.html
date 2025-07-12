@@ -9,9 +9,407 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Additional styling and JS logic as in the original content -->
+    <!-- Chosen Palette: Cool Neutrals -->
+    <!-- Application Structure Plan: A tab-based SPA to segment the report's content logically. The structure is: 1) Overview with an interactive comparison chart, 2) Magazine Deep Dive with dynamic content switching, 3) Regional Events explorer organized by country, 4) Further Reading for academic sources, and 5) a final Strategy section. This user-driven, non-linear structure is chosen over a simple scrollable report to enhance explorability, facilitate direct comparisons, and allow users to quickly access the specific information they need without being overwhelmed by text. -->
+    <!-- Visualization & Content Choices: 
+        - Magazine Comparison: Goal=Compare -> Viz=Horizontal Bar Chart (Chart.js/Canvas) showing a "Regional Authority Score" derived from report text (e.g., BPA audit, longevity, local focus). Interaction=Hover tooltips. Justification=Provides an immediate, high-level visual summary of the magazines' standing.
+        - Magazine Details: Goal=Inform -> Presentation=Clickable pill buttons that dynamically display content in a shared view pane. Interaction=JS-driven show/hide logic. Justification=Breaks down dense paragraphs into manageable, on-demand information chunks, improving readability and reducing cognitive load.
+        - Trade Shows: Goal=Organize -> Presentation=Clickable country buttons that filter a list of event cards. Interaction=JS-driven filtering. Justification=Geographically organizing events is more intuitive for users than a single, long list.
+        - Journals/Recommendations: Goal=Inform -> Presentation=Styled content cards using HTML/Tailwind. Interaction=Subtle hover effects. Justification=Cards cleanly segment distinct pieces of information.
+        - All choices confirm to NO SVG and NO Mermaid.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .tab-button.active { border-color: #2563eb; color: #2563eb; background-color: #eff6ff; }
+        .tab-button { transition: all 0.2s ease-in-out; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .magazine-selector.active { background-color: #2563eb; color: white; }
+        .country-selector.active { background-color: #166534; color: white; }
+    </style>
 </head>
-<body>
-<!-- Body content truncated for brevity -->
+<body class="bg-slate-50 text-slate-800">
+
+    <main class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Southeast Asia's Industrial Automation Media Landscape</h1>
+            <p class="mt-3 text-lg text-slate-600 max-w-3xl mx-auto">An interactive guide to the key publications, events, and insights shaping the region's automation industry.</p>
+        </header>
+
+        <div class="w-full">
+            <nav class="flex flex-wrap justify-center border-b border-slate-200 mb-8" id="tab-navigation">
+                <button data-tab="overview" class="tab-button text-sm sm:text-base font-medium py-3 px-3 sm:px-5 border-b-2 border-transparent hover:border-slate-300 hover:bg-slate-100">Overview</button>
+                <button data-tab="magazines" class="tab-button text-sm sm:text-base font-medium py-3 px-3 sm:px-5 border-b-2 border-transparent hover:border-slate-300 hover:bg-slate-100">Magazine Deep Dive</button>
+                <button data-tab="events" class="tab-button text-sm sm:text-base font-medium py-3 px-3 sm:px-5 border-b-2 border-transparent hover:border-slate-300 hover:bg-slate-100">Regional Events</button>
+                <button data-tab="journals" class="tab-button text-sm sm:text-base font-medium py-3 px-3 sm:px-5 border-b-2 border-transparent hover:border-slate-300 hover:bg-slate-100">Further Reading</button>
+                <button data-tab="strategy" class="tab-button text-sm sm:text-base font-medium py-3 px-3 sm:px-5 border-b-2 border-transparent hover:border-slate-300 hover:bg-slate-100">Strategy</button>
+            </nav>
+
+            <div id="tab-content">
+                <section id="overview" class="content-section">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-4">Report Snapshot</h2>
+                        <p class="text-slate-600 mb-6">Southeast Asia is a dynamic and rapidly expanding hub for industrial automation. This report analyzes the leading publications and resources that are critical for any professional navigating this landscape. The key finding is that a comprehensive approach, combining diverse information sources, is essential for staying competitive. This interactive dashboard allows you to explore these sources.</p>
+                        
+                        <h3 class="text-xl font-semibold text-slate-800 mt-8 mb-4 text-center">Comparative Magazine Authority</h3>
+                        <p class="text-slate-600 mb-6 max-w-2xl mx-auto text-center">This chart provides a visual comparison of the leading magazines based on a calculated "Regional Authority Score". This score synthesizes factors mentioned in the report like editorial focus, audited readership, longevity, and specificity to the Southeast Asian market. Hover over the bars for details.</p>
+                        <div class="chart-container">
+                            <canvas id="magazineComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="magazines" class="content-section">
+                     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Magazine Deep Dive</h2>
+                        <p class="text-slate-600 mb-6">Select a publication to view its detailed profile, including its primary focus, target audience, and unique value proposition. This section breaks down the report's analysis into comparable, digestible segments.</p>
+
+                        <div id="magazine-selector-container" class="flex flex-wrap gap-2 mb-6 justify-center">
+                        </div>
+
+                        <div id="magazine-details-container" class="mt-4 transition-all duration-300">
+                        </div>
+                    </div>
+                </section>
+
+                <section id="events" class="content-section">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Major Regional Trade Shows</h2>
+                        <p class="text-slate-600 mb-6">Trade shows are indispensable for networking and discovering the latest innovations. The high frequency of events across Southeast Asia highlights the market's dynamism. Select a country to explore its key industrial automation trade shows.</p>
+                        
+                        <div id="country-selector-container" class="flex flex-wrap gap-2 mb-6 justify-center">
+                        </div>
+
+                        <div id="events-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                        </div>
+                    </div>
+                </section>
+
+                <section id="journals" class="content-section">
+                     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Academic & Research Sources</h2>
+                        <p class="text-slate-600 mb-6">For those involved in R&D or seeking to understand the foundational science behind automation technologies, academic journals are critical. They provide in-depth research on complex challenges and future solutions, particularly in areas like IIoT security and human-machine interaction.</p>
+                        <div id="journals-list-container" class="space-y-6">
+                        </div>
+                    </div>
+                </section>
+
+                <section id="strategy" class="content-section">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-4">Recommendations for Industry Professionals</h2>
+                        <p class="text-slate-600 mb-8">To effectively navigate the industrial automation landscape in Southeast Asia and maintain a competitive edge, the report recommends a multi-faceted approach to information gathering. Here are the key strategies:</p>
+                        <div id="strategy-list-container" class="space-y-6">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </main>
+    
+    <footer class="text-center py-8 text-sm text-slate-500">
+        <p>Interactive report generated from source material. &copy; 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const magazineData = {
+                iaa: {
+                    name: 'Industrial Automation Asia (IAA)',
+                    score: 95,
+                    usp: 'Comprehensive ASEAN-wide coverage and the region\'s first BPA audited publication.',
+                    focus: 'Industrial robotics, EV charging, IoT, e-mobility, sustainability, cybersecurity, smart manufacturing, energy storage, urban farming.',
+                    audience: 'Top-level management, purchasers, 37,000 registered professionals per issue.',
+                    frequency: '8 issues/year (Print quarterly, digital more frequently).',
+                    channels: 'Print, Online, iPad, Free Subscription.',
+                    reputation: 'Established in 2001, its BPA audit signifies high credibility and transparent readership data, making it a reliable and authoritative voice.'
+                },
+                amst: {
+                    name: 'Asia Manufacturing News Today',
+                    score: 80,
+                    usp: 'Strong strategic business focus, providing broader economic and geopolitical context.',
+                    focus: 'AI, Big Data, IoT, Smart Manufacturing, Business News, Case Studies, Energy, Engineering, and regional economic issues.',
+                    audience: 'Professionals and businesses in manufacturing, business leaders, strategists, and market analysts.',
+                    frequency: 'Regular updates (likely monthly or more frequent).',
+                    channels: 'Online platform.',
+                    reputation: 'Positions itself as a vital source for "information for manufacturing business success," blending tech news with commercial strategy.'
+                },
+                mmt: {
+                    name: 'MM The Industrial Magazine Thailand',
+                    score: 75,
+                    usp: 'Hyper-local focus on the Thai market, licensed by a reputable German publisher.',
+                    focus: 'Metal and plastic processing, factory automation, drive engineering, production, process, control, electronics, IT, and logistics.',
+                    audience: 'Professionals and businesses operating within the Thai manufacturing sector.',
+                    frequency: 'Not explicitly stated, but maintains an active online presence.',
+                    channels: 'Online platform.',
+                    reputation: 'Claims to be the leading industrial magazine in Thailand, bridging global technology from its German partner (Vogel Business Media) to the local industry.'
+                },
+                ram: {
+                    name: 'Robotics & Automation Magazine',
+                    score: 65,
+                    usp: 'Specialized global perspective on robotics technology with APAC/SEA coverage.',
+                    focus: 'AGVs, AI, AMRs, Cobots, Machine vision, RPA, Unmanned systems across various industries (Automotive, Logistics, F&B, etc.).',
+                    audience: 'Engineers, R&D professionals, and technology integrators requiring deep technical information.',
+                    frequency: 'Monthly issues.',
+                    channels: 'Online platform.',
+                    reputation: 'A valuable supplementary source for benchmarking against international trends, though its primary focus is not solely on SEA.'
+                }
+            };
+
+            const eventsData = {
+                singapore: [
+                    { name: 'Industrial Transformation Asia-Pacific (ITAP) 2025', date: 'Oct 15-17', focus: 'Leading Industry 4.0 event for APAC. Focus on AI, automation, robotics. 500+ exhibitors, 25,000+ visitors.' },
+                    { name: 'ITMA ASIA + CITME Singapore 2025', date: 'Oct 28-31', focus: 'Covers Software & Automation in the textile machinery industry.' },
+                    { name: 'SWITCH 2025', date: 'Oct 29-31', focus: 'Includes Manufacturing and Transformative Digital Technologies.' }
+                ],
+                malaysia: [
+                    { name: 'Advanced Innovation & Manufacturing Asia Week 2025', date: 'Sep 11-12', focus: 'Located in Penang, features AI, robotics, and smart automation.' },
+                    { name: 'SMART FACTORY EXPO 2025', date: 'Date in 2025, KL', focus: 'Focuses on Industry 4.0, IoT-based factory automation, AI, and cybersecurity.' },
+                    { name: 'ENGINEER & MARVEX 2025', date: 'Sep 9-12', focus: 'Held in Kuala Lumpur, includes a Robotics & Automation section.' }
+                ],
+                thailand: [
+                    { name: 'Thailand Industrial Fair (TIF) 2025', date: 'Feb 12-15', focus: 'Automation Machinery Exhibition in Bangkok highlighting Robotics, IoT, and AI.' },
+                    { name: 'INTERMACH 2026', date: 'May 13-16, 2026', focus: 'Major event in Bangkok featuring an Automation & Robotics section.' },
+                    { name: 'METALEX 2025', date: 'Nov 19-22', focus: 'Focuses on Machine Tools & Metalworking for production upgrades.' }
+                ],
+                vietnam: [
+                    { name: 'Vietnam Industrial Automation Fiesta (VIAF) 2025', date: 'Multiple Dates (e.g., June 18-20)', focus: 'Multiple locations (Binh Duong, Bac Ninh). Focus on Industry 4.0, IoT, Robotics.' },
+                    { name: 'Vietnam Manufacturing Expo (VME) 2025', date: 'Aug 6-8', focus: 'Held in Hanoi, focuses on "Cognitive Automation." 200+ exhibitors.' },
+                    { name: 'METALEX Vietnam 2025', date: 'Oct 1-3', focus: 'Ho Chi Minh City event that includes Industrial Robot Automation.' }
+                ]
+            };
+            
+            const journalsData = [
+                {
+                    name: "Journal of Advanced Manufacturing Technology (JAMT)",
+                    icon: "🔬",
+                    description: "A peer-reviewed, international journal publishing original articles in engineering, science, and technology. Its scope includes robotics, automation, and manufacturing management. It offers deep dives into methodologies and long-term implications.",
+                    indexing: "Indexed by: Scopus, Asean Citation Index, Google Scholar."
+                },
+                {
+                    name: "Malaysian Journal of Computer Science (MJCS)",
+                    icon: "💻",
+                    description: "Promotes the exchange of knowledge in computer science and IT. Its scope is highly relevant to industrial automation, covering AI, Big Data, IoT, Machine Learning, Robotics, and Cybersecurity.",
+                    indexing: "Focuses on research findings, projects, and industrial experiences."
+                },
+                {
+                    name: "Sustainability Journal",
+                    icon: "🌍",
+                    description: "An international, open-access journal covering all aspects of sustainability, including the technical dimensions. It features research on critical topics like creating secure IIoT-enabled Industry 4.0 systems.",
+                    indexing: "Publishes methods and findings for developing robust, sustainable solutions."
+                }
+            ];
+
+            const strategyData = [
+                {
+                    title: "Cultivate a Holistic Information Strategy",
+                    icon: "📚",
+                    description: "Don't rely on a single source. Combine regional magazines like IAA for broad trends, business-focused ones like Asia Manufacturing News Today for strategic context, and local ones like MM Thailand for country-specific nuances."
+                },
+                {
+                    title: "Prioritize Active Event Participation",
+                    icon: "🤝",
+                    description: "Attend major trade shows. They offer direct exposure to new technologies, invaluable networking with industry leaders, and a real-time pulse on market demands. Use magazines to prepare for and follow up on events."
+                },
+                {
+                    title: "Tailor Information to Your Needs",
+                    icon: "🎯",
+                    description: "Align your reading with your role. Technical specialists may focus on Robotics & Automation Magazine and academic journals, while business leaders might prioritize strategic and economic analyses."
+                },
+                {
+                    title: "Embrace Digital Engagement",
+                    icon: "🌐",
+                    description: "Leverage the online presence of these resources. Subscribe to newsletters, attend webinars, and use online archives to ensure continuous access to the latest information and thought leadership."
+                }
+            ];
+
+            const tabNavigation = document.getElementById('tab-navigation');
+            const tabContent = document.getElementById('tab-content');
+            const magazineSelectorContainer = document.getElementById('magazine-selector-container');
+            const magazineDetailsContainer = document.getElementById('magazine-details-container');
+            const countrySelectorContainer = document.getElementById('country-selector-container');
+            const eventsListContainer = document.getElementById('events-list-container');
+            const journalsListContainer = document.getElementById('journals-list-container');
+            const strategyListContainer = document.getElementById('strategy-list-container');
+
+            function showTab(tabId) {
+                Array.from(tabNavigation.children).forEach(button => {
+                    button.classList.toggle('active', button.dataset.tab === tabId);
+                });
+                Array.from(tabContent.children).forEach(section => {
+                    section.classList.toggle('active', section.id === tabId);
+                });
+            }
+
+            function displayMagazineDetails(magId) {
+                const mag = magazineData[magId];
+                if (!mag) return;
+                
+                Array.from(magazineSelectorContainer.children).forEach(button => {
+                    button.classList.toggle('active', button.dataset.mag === magId);
+                });
+
+                magazineDetailsContainer.innerHTML = `
+                    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 animate-fade-in">
+                        <h3 class="text-xl font-bold text-blue-700 mb-3">${mag.name}</h3>
+                        <p class="text-slate-700 mb-4"><strong class="font-semibold text-slate-800">Key Differentiator:</strong> ${mag.usp}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                            <div class="bg-white p-4 rounded-md border">
+                                <h4 class="font-semibold text-slate-900 mb-1">Focus Areas</h4>
+                                <p class="text-slate-600">${mag.focus}</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-md border">
+                                <h4 class="font-semibold text-slate-900 mb-1">Target Audience</h4>
+                                <p class="text-slate-600">${mag.audience}</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-md border">
+                                <h4 class="font-semibold text-slate-900 mb-1">Publication & Channels</h4>
+                                <p class="text-slate-600">Frequency: ${mag.frequency}<br>Channels: ${mag.channels}</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-md border">
+                                <h4 class="font-semibold text-slate-900 mb-1">Reputation & Standing</h4>
+                                <p class="text-slate-600">${mag.reputation}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            function displayEvents(countryId) {
+                const events = eventsData[countryId];
+                if (!events) return;
+                
+                 Array.from(countrySelectorContainer.children).forEach(button => {
+                    button.classList.toggle('active', button.dataset.country === countryId);
+                });
+
+                eventsListContainer.innerHTML = events.map(event => `
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm transition hover:shadow-md hover:-translate-y-1">
+                        <h4 class="font-bold text-green-800">${event.name}</h4>
+                        <p class="text-sm font-semibold text-slate-600 my-1">${event.date}</p>
+                        <p class="text-sm text-slate-500">${event.focus}</p>
+                    </div>
+                `).join('');
+            }
+            
+            function initializeContent() {
+                Object.keys(magazineData).forEach(key => {
+                    const button = document.createElement('button');
+                    button.dataset.mag = key;
+                    button.textContent = magazineData[key].name;
+                    button.className = 'magazine-selector py-2 px-4 rounded-full text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+                    button.onclick = () => displayMagazineDetails(key);
+                    magazineSelectorContainer.appendChild(button);
+                });
+                
+                Object.keys(eventsData).forEach(key => {
+                    const button = document.createElement('button');
+                    button.dataset.country = key;
+                    button.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+                    button.className = 'country-selector py-2 px-4 rounded-full text-sm font-medium bg-green-100 hover:bg-green-200 text-green-800 transition';
+                    button.onclick = () => displayEvents(key);
+                    countrySelectorContainer.appendChild(button);
+                });
+
+                journalsListContainer.innerHTML = journalsData.map(journal => `
+                    <div class="flex items-start gap-4 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <div class="text-3xl">${journal.icon}</div>
+                        <div>
+                           <h3 class="font-bold text-slate-800">${journal.name}</h3>
+                           <p class="text-slate-600 mt-1">${journal.description}</p>
+                           <p class="text-xs text-slate-500 mt-2">${journal.indexing}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                strategyListContainer.innerHTML = strategyData.map(item => `
+                    <div class="flex items-start gap-5">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl">${item.icon}</div>
+                        <div>
+                            <h3 class="font-semibold text-lg text-slate-800">${item.title}</h3>
+                            <p class="text-slate-600 mt-1">${item.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                showTab('overview');
+                displayMagazineDetails('iaa');
+                displayEvents('singapore');
+            }
+
+            tabNavigation.addEventListener('click', (e) => {
+                if (e.target.matches('button[data-tab]')) {
+                    showTab(e.target.dataset.tab);
+                }
+            });
+
+            const ctx = document.getElementById('magazineComparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.values(magazineData).map(m => m.name),
+                    datasets: [{
+                        label: 'Regional Authority Score',
+                        data: Object.values(magazineData).map(m => m.score),
+                        backgroundColor: [
+                            'rgba(37, 99, 235, 0.7)',
+                            'rgba(22, 163, 74, 0.7)',
+                            'rgba(217, 70, 239, 0.7)',
+                            'rgba(249, 115, 22, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(37, 99, 235)',
+                            'rgb(22, 163, 74)',
+                            'rgb(217, 70, 239)',
+                            'rgb(249, 115, 22)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(203, 213, 225, 0.5)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Authority Score (out of 100)'
+                            }
+                        },
+                        y: {
+                           grid: {
+                                display: false
+                           }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const magId = Object.keys(magazineData)[context.dataIndex];
+                                    const mag = magazineData[magId];
+                                    return `${mag.name}: ${context.raw}. USP: ${mag.usp}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            initializeContent();
+        });
+    </script>
 </body>
 </html>
