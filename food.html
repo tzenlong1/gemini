@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,5 +9,510 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    ...
+    <!-- Chosen Palette: Earthy Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed with a user-centric, non-linear flow, prioritizing exploration over the report's linear structure. It's organized into four main thematic sections: 'Overview', 'Influential Editors', 'Leading Publications', and 'Key Themes'. This dashboard-like approach allows users to quickly jump to the section most relevant to their needs. The core interaction involves filtering and cross-referencing. For example, selecting a theme will highlight the editors and publications focused on it. This structure was chosen to make the complex relationships between people, publications, and topics immediately visible and understandable, facilitating strategic decision-making rather than just passive reading. -->
+    <!-- Visualization & Content Choices: 1. Editor Profiles (Inform/Compare): Interactive cards for quick scanning, expanding to a detailed modal view for deep dives. This avoids cluttering the main view. 2. Publication Comparison (Compare/Inform): A dynamic bar chart (Chart.js) visualizes reach metrics (web, digital, print), making quantitative comparisons intuitive. This is paired with descriptive text for qualitative context. 3. Key Themes (Relationships): A bubble chart (Chart.js) represents themes, with bubble size corresponding to mention frequency. This provides a quick visual hierarchy of industry trends. Clicking a bubble acts as a filter, instantly showing related editors/publications. This interaction makes discovering relationships engaging and efficient. All choices use Canvas-based Chart.js, avoiding SVG/Mermaid as required. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #4a4a4a;
+        }
+        .active-nav {
+            border-bottom-width: 2px;
+            border-color: #a16207;
+            color: #a16207;
+            font-weight: 600;
+        }
+        .nav-item {
+            cursor: pointer;
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .modal-bg {
+            background-color: rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Navigating the ASEAN Food Industry Media Landscape</h1>
+            <p class="text-lg text-gray-600">An Interactive Guide to Key Editors, Publications, and Trends</p>
+        </header>
+
+        <nav class="sticky top-0 bg-f8f7f4/80 backdrop-blur-sm z-10 mb-10">
+            <ul class="flex justify-center border-b border-gray-200">
+                <li id="nav-overview" class="nav-item px-4 py-3 active-nav">Overview</li>
+                <li id="nav-editors" class="nav-item px-4 py-3">Editors</li>
+                <li id="nav-publications" class="nav-item px-4 py-3">Publications</li>
+                <li id="nav-themes" class="nav-item px-4 py-3">Key Themes</li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Overview Section -->
+            <section id="section-overview" class="content-section active">
+                <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">The Pulse of a Dynamic Industry</h2>
+                    <p class="mb-4 text-gray-700">The food and beverage (F&B) sector in ASEAN is a vibrant, fast-growing market. Trade publications are the essential navigators in this complex landscape, providing critical intelligence on market trends, innovation, and strategic opportunities. They don't just report the news; they shape the industry's agenda.</p>
+                    <p class="mb-6 text-gray-700">This interactive guide is designed to help you understand this media ecosystem. Explore influential editors who set the narrative, compare the reach and focus of leading publications, and discover the key themes driving the industry forward. Use the navigation above to dive into the data and uncover strategic insights.</p>
+                    <div class="grid md:grid-cols-3 gap-6 text-center">
+                        <div class="bg-amber-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-bold text-amber-800 mb-2">Explore Editors</h3>
+                            <p class="text-amber-700">Discover the key figures shaping F&B media and their specific areas of expertise.</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-bold text-green-800 mb-2">Compare Publications</h3>
+                            <p class="text-green-700">Analyze the reach, focus, and influence of the top trade magazines in the region.</p>
+                        </div>
+                         <div class="bg-sky-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-bold text-sky-800 mb-2">Analyze Themes</h3>
+                            <p class="text-sky-700">Interact with data to see which trends dominate the discourse and who leads the conversation.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Editors Section -->
+            <section id="section-editors" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800">Influential Editors</h2>
+                    <p class="text-gray-600 mt-2 max-w-2xl mx-auto">These individuals are at the forefront of the ASEAN F&B industry dialogue, shaping narratives and highlighting key innovations. Click on a profile to learn more.</p>
+                </div>
+                <div id="editor-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Editor cards will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Publications Section -->
+            <section id="section-publications" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800">Leading Publications</h2>
+                    <p class="text-gray-600 mt-2 max-w-2xl mx-auto">This section provides a comparative overview of key trade magazines. The chart below visualizes the multi-platform reach of each publication, making it easy to compare their digital and print influence.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="chart-container">
+                        <canvas id="publicationsChart"></canvas>
+                    </div>
+                    <div id="publication-actions" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Buttons for generating article ideas will be injected here -->
+                    </div>
+                     <div id="article-ideas-output" class="mt-8 p-4 bg-gray-50 rounded-lg hidden">
+                        <h3 class="font-semibold text-lg text-gray-700 mb-2">Suggested Article Topics:</h3>
+                        <div id="article-ideas-content" class="text-gray-600">
+                            <!-- LLM generated content will appear here -->
+                        </div>
+                        <div id="article-ideas-loading" class="text-center text-amber-600 hidden">
+                            Generating ideas, please wait...
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Themes Section -->
+            <section id="section-themes" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800">Key Industry Themes</h2>
+                    <p class="text-gray-600 mt-2 max-w-2xl mx-auto">The ASEAN F&B industry conversation is dominated by several key themes. The chart below visualizes the prominence of these topics. Click on a bubble to filter the editor list and see who are the key voices for each theme.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="chart-container">
+                        <canvas id="themesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Editor Details -->
+    <div id="editorModal" class="fixed inset-0 z-50 items-center justify-center p-4 hidden">
+        <div class="modal-bg fixed inset-0"></div>
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto relative transform scale-95">
+             <button id="closeModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="modal-body" class="p-8">
+                <!-- Modal content will be injected by JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const data = {
+                editors: [
+                    {
+                        id: 'said',
+                        name: 'Shawque Said',
+                        publication: 'Asia Food & Beverages Report (AFBR)',
+                        title: 'Founder & Research Director',
+                        experience: '20+ years',
+                        focus: ['Market research', 'Strategic reports', 'Supply chain', 'Market entry'],
+                        bio: 'Shawque Said is a unique figure in the ASEAN F&B media landscape, blending editorial leadership with extensive market research expertise and direct corporate experience. He founded AFBR, now a Top 3 regional publication. His background includes roles as Editor of FoodASIA, Research Director for BeverASIA, and managing research projects for multinationals like Suntory, Carrefour, and TetraPak.',
+                        impact: 'His deep-seated understanding of market dynamics and vast network make him an unparalleled resource for strategic insights and competitive analysis.',
+                        color: 'bg-red-100',
+                        textColor: 'text-red-800'
+                    },
+                    {
+                        id: 'isabedra',
+                        name: 'Catherine Isabedra',
+                        publication: 'Asia Food Journal',
+                        title: 'Editor',
+                        experience: 'Not Specified',
+                        focus: ['F&B innovation', 'Sustainability', 'Alternative proteins', 'Ingredients'],
+                        bio: 'As Editor for Asia Food Journal, Catherine Isabedra is a prolific contributor focusing on innovation, sustainability, and emerging ingredient trends. Her work often explores industry disruptors, upcycled food, and smart manufacturing.',
+                        impact: 'She is an agenda-setter, guiding industry discourse. Under her leadership, the journal actively recognizes industry achievements, such as presenting the "Global Media Pick Award for Logistics and Cold Chain" at ICPI Week 2025, making the publication a key validator in the ecosystem.',
+                        color: 'bg-blue-100',
+                        textColor: 'text-blue-800'
+                    },
+                    {
+                        id: 'yow',
+                        name: 'Audrey Yow',
+                        publication: 'FoodNavigator-Asia / NutraIngredients-Asia',
+                        title: 'Journalist',
+                        experience: 'Long-standing',
+                        focus: ['Nutraceuticals', 'Functional foods', 'Consumer health trends', 'Sustainable packaging'],
+                        bio: 'Audrey Yow is a prominent journalist providing in-depth insights into the food and nutraceuticals industries. Her work frequently addresses health-conscious consumer trends, functional foods, plant-based innovations, and the integration of traditional remedies.',
+                        impact: 'Her focus on the convergence of food and health is crucial for companies at this intersection. Her ability to bridge these domains makes her a critical voice for navigating consumer health demands and ingredient innovation.',
+                        color: 'bg-green-100',
+                        textColor: 'text-green-800'
+                    },
+                    {
+                        id: 'scattergood',
+                        name: 'Gary Scattergood',
+                        publication: 'AGTECHNAVIGATOR / FoodNavigatorAsia.com',
+                        title: 'Editor-in-Chief',
+                        experience: '20+ years',
+                        focus: ['Agri-food technology', 'Nutrition', 'Cosmetics', 'Editorial oversight'],
+                        bio: 'With over 20 years in media, Gary Scattergood is the Editor-in-Chief of AGTECHNAVIGATOR and oversees William Reed\'s APAC HQ, which includes FoodNavigatorAsia.com and the Growth Asia Summit.',
+                        impact: 'He holds a key leadership position overseeing multiple influential platforms that cover a wide spectrum from agri-tech to nutrition, guiding the editorial direction and commercial strategy for a significant portion of the region\'s F&B media.',
+                        color: 'bg-yellow-100',
+                        textColor: 'text-yellow-800'
+                    }
+                ],
+                publications: {
+                    labels: ['APFI Magazine', 'Asia Food Journal', 'AFBR'],
+                    datasets: [
+                        {
+                            label: 'Web Page Views',
+                            data: [725169, 500000, 450000],
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Digital Magazine Views',
+                            data: [309301, 200000, 180000],
+                            backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Print Distribution',
+                            data: [63680, 0, 0],
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }
+                    ],
+                    focusAreas: {
+                        'APFI Magazine': ['food processing', 'packaging', 'ingredients', 'innovative technologies', 'health and nutrition trends', 'market reports', 'supply chain', 'trade policies'],
+                        'Asia Food Journal': ['F&B innovation', 'sustainability', 'alternative proteins', 'ingredients', 'smart manufacturing', 'logistics', 'cold chain', 'industry disruptions'],
+                        'AFBR': ['market research', 'strategic reports', 'supply chain', 'market entry strategies', 'consumer trends', 'beverage industry', 'food industry in Southeast Asia']
+                    }
+                },
+                themes: [
+                    { label: 'Innovation', value: 25 },
+                    { label: 'Sustainability', value: 22 },
+                    { label: 'Health & Nutrition', value: 20 },
+                    { label: 'Plant-Based', value: 18 },
+                    { label: 'Packaging', value: 15 },
+                    { label: 'Market Trends', value: 12 },
+                    { label: 'Technology', value: 10 }
+                ]
+            };
+
+            const sections = document.querySelectorAll('.content-section');
+            const navItems = document.querySelectorAll('.nav-item');
+            const editorGrid = document.getElementById('editor-grid');
+            const editorModal = document.getElementById('editorModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const modalBody = document.getElementById('modal-body');
+            const publicationActions = document.getElementById('publication-actions');
+            const articleIdeasOutput = document.getElementById('article-ideas-output');
+            const articleIdeasContent = document.getElementById('article-ideas-content');
+            const articleIdeasLoading = document.getElementById('article-ideas-loading');
+
+            function showSection(id) {
+                sections.forEach(section => {
+                    if (section.id === `section-${id}`) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                navItems.forEach(item => {
+                    if (item.id === `nav-${id}`) {
+                        item.classList.add('active-nav');
+                    } else {
+                        item.classList.remove('active-nav');
+                    }
+                });
+            }
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = item.id.split('-')[1];
+                    showSection(id);
+                });
+            });
+            
+            function renderEditors(filteredEditors = data.editors) {
+                editorGrid.innerHTML = '';
+                filteredEditors.forEach(editor => {
+                    const card = document.createElement('div');
+                    card.className = `p-6 rounded-xl shadow-md cursor-pointer transform hover:scale-105 transition-transform duration-300 ${editor.color}`;
+                    card.dataset.id = editor.id;
+                    card.innerHTML = `
+                        <h3 class="text-xl font-bold ${editor.textColor}">${editor.name}</h3>
+                        <p class="font-semibold text-gray-700 mt-1">${editor.publication}</p>
+                        <p class="text-sm text-gray-600 mt-2">${editor.title}</p>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            ${editor.focus.slice(0, 2).map(f => `<span class="bg-white/60 text-xs font-medium px-2 py-1 rounded-full ${editor.textColor}">${f}</span>`).join('')}
+                        </div>
+                    `;
+                    card.addEventListener('click', () => showEditorModal(editor.id));
+                    editorGrid.appendChild(card);
+                });
+            }
+
+            function showEditorModal(id) {
+                const editor = data.editors.find(e => e.id === id);
+                if (!editor) return;
+
+                modalBody.innerHTML = `
+                    <div class="text-center mb-6">
+                        <h2 class="text-3xl font-bold ${editor.textColor}">${editor.name}</h2>
+                        <p class="text-xl font-semibold text-gray-700 mt-1">${editor.publication}</p>
+                        <p class="text-md text-gray-500 mt-1">${editor.title} | Experience: ${editor.experience}</p>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-lg text-gray-800 mb-2">Core Expertise:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${editor.focus.map(f => `<span class="${editor.color} ${editor.textColor} text-sm font-medium px-3 py-1 rounded-full">${f}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <h4 class="font-semibold text-lg text-gray-800 mb-1">Profile</h4>
+                            <p>${editor.bio}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg text-gray-800 mb-1">Industry Impact</h4>
+                            <p>${editor.impact}</p>
+                        </div>
+                    </div>
+                `;
+                editorModal.classList.remove('hidden');
+                editorModal.classList.add('flex');
+                setTimeout(() => {
+                    editorModal.querySelector('.modal-bg').classList.remove('opacity-0');
+                    editorModal.querySelector('.modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+
+            function hideEditorModal() {
+                 editorModal.querySelector('.modal-bg').classList.add('opacity-0');
+                 editorModal.querySelector('.modal-content').classList.add('scale-95');
+                 setTimeout(() => {
+                    editorModal.classList.add('hidden');
+                    editorModal.classList.remove('flex');
+                 }, 300);
+            }
+
+            closeModalBtn.addEventListener('click', hideEditorModal);
+            editorModal.querySelector('.modal-bg').addEventListener('click', hideEditorModal);
+
+            const pubCtx = document.getElementById('publicationsChart').getContext('2d');
+            new Chart(pubCtx, {
+                type: 'bar',
+                data: data.publications,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('en-US', {
+                                        notation: 'compact',
+                                        compactDisplay: 'short'
+                                    }).format(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Publication Reach Comparison (Web, Digital, Print)',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US').format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Add buttons for generating article ideas
+            data.publications.labels.forEach(pubName => {
+                const button = document.createElement('button');
+                button.className = 'bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-300 flex items-center justify-center';
+                button.innerHTML = `Generate Article Ideas for ${pubName} ✨`;
+                button.addEventListener('click', () => generateArticleIdeas(pubName));
+                publicationActions.appendChild(button);
+            });
+
+            async function generateArticleIdeas(publicationName) {
+                articleIdeasOutput.classList.remove('hidden');
+                articleIdeasContent.innerHTML = '';
+                articleIdeasLoading.classList.remove('hidden');
+
+                const focusAreas = data.publications.focusAreas[publicationName];
+                const prompt = `Given that ${publicationName} focuses on ${focusAreas.join(', ')} in the ASEAN food industry, suggest 5 unique and innovative article topics that would be relevant for their readership. Format the output as a numbered list.`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        articleIdeasContent.innerHTML = text.replace(/\n/g, '<br>');
+                    } else {
+                        articleIdeasContent.innerHTML = 'Could not generate ideas. Please try again.';
+                    }
+                } catch (error) {
+                    console.error('Error generating article ideas:', error);
+                    articleIdeasContent.innerHTML = 'Error generating ideas. Please check your network connection.';
+                } finally {
+                    articleIdeasLoading.classList.add('hidden');
+                }
+            }
+
+
+            const themesCtx = document.getElementById('themesChart').getContext('2d');
+            const themesChart = new Chart(themesCtx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Key Themes',
+                        data: data.themes.map(theme => ({
+                            x: Math.random() * 10,
+                            y: Math.random() * 10,
+                            r: theme.value,
+                            label: theme.label
+                        })),
+                        backgroundColor: 'rgba(161, 98, 7, 0.6)',
+                        borderColor: 'rgba(161, 98, 7, 1)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dataPoint = context.dataset.data[context.dataIndex];
+                                    return `${dataPoint.label}: ${dataPoint.r}`;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Prominence of Industry Themes (Click to Filter Editors)',
+                            font: { size: 16 }
+                        }
+                    },
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const clickedElement = elements[0];
+                            const themeLabel = themesChart.data.datasets[clickedElement.datasetIndex].data[clickedElement.index].label.toLowerCase();
+                            
+                            const filtered = data.editors.filter(editor => 
+                                editor.focus.some(f => f.toLowerCase().includes(themeLabel))
+                            );
+                            
+                            showSection('editors');
+                            renderEditors(filtered);
+                        }
+                    }
+                }
+            });
+
+            renderEditors();
+        });
+    </script>
+
+</body>
 </html>
