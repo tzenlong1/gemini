@@ -36,6 +36,481 @@
     </style>
 </head>
 <body class="text-slate-700">
-<!-- Content omitted for brevity -->
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <header class="text-center py-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800">
+                Influential Voices in<br><span class="gradient-text">Asian Automation</span>
+            </h1>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">
+                A visual deep dive into the editors, leaders, and experts shaping the future of automation, robotics, and AI across Asia.
+            </p>
+        </header>
+
+        <section id="hook" class="text-center bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-slate-200">
+            <p class="text-lg font-medium text-slate-600">Driven by aggressive national strategies, China is on track to establish</p>
+            <p class="text-7xl md:text-8xl font-extrabold my-4 text-[#03045E]">30,000</p>
+            <p class="text-lg font-medium text-slate-600">smart factories by 2025, signaling the incredible pace of automation adoption in the region.</p>
+        </section>
+
+        <section id="pillars" class="py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800">The Three Pillars of Influence</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">The Asian automation scene is shaped by a network of leaders across three key domains, each contributing to the ecosystem's growth and direction.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
+                <div class="text-center p-6 bg-white rounded-lg shadow-md w-60">
+                    <div class="text-4xl mb-2">📰</div>
+                    <h3 class="font-bold text-lg text-[#03045E]">Publications</h3>
+                    <p class="text-sm text-slate-500">Curating and disseminating knowledge.</p>
+                </div>
+                <div class="h-8 md:h-0 w-1 md:w-16 bg-slate-300"></div>
+                 <div class="text-center p-6 bg-white rounded-lg shadow-md w-60">
+                    <div class="text-4xl mb-2">🤝</div>
+                    <h3 class="font-bold text-lg text-[#03045E]">Associations</h3>
+                    <p class="text-sm text-slate-500">Setting standards and fostering collaboration.</p>
+                </div>
+                <div class="h-8 md:h-0 w-1 md:w-16 bg-slate-300"></div>
+                 <div class="text-center p-6 bg-white rounded-lg shadow-md w-60">
+                    <div class="text-4xl mb-2">💡</div>
+                    <h3 class="font-bold text-lg text-[#03045E]">Experts & Visionaries</h3>
+                    <p class="text-sm text-slate-500">Driving innovation and application.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="geo-distribution" class="py-16 bg-slate-50 rounded-2xl">
+            <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold text-slate-800">Mapping Influence: A Geographic View</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">Leadership in automation is concentrated across several key Asian nations, each contributing uniquely to the region's technological advancement.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="chart-container h-[500px]">
+                    <canvas id="geoChart"></canvas>
+                </div>
+                <button class="mt-6 w-full bg-[#0077B6] hover:bg-[#0096C7] text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300" onclick="summarizeSection('geo-distribution')">✨ Summarize Section ✨</button>
+                <div id="summary-geo-distribution" class="summary-output mt-4 text-sm text-slate-700 bg-indigo-50 p-3 rounded-md hidden"></div>
+                
+                <button class="mt-4 w-full bg-[#00B4D8] hover:bg-[#48CAE4] text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300" onclick="generateTrendAnalysis()">✨ Analyze Geographic Trends ✨</button>
+                <div id="trend-analysis-output" class="summary-output mt-4 text-sm text-slate-700 bg-blue-50 p-3 rounded-md hidden"></div>
+            </div>
+        </section>
+        
+        <section id="associations" class="py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800">Architects of the Ecosystem</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">Professional associations like Singapore's AutomationSG orchestrate the industry by combining diverse expertise from every corner of the innovation landscape.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="font-bold text-center text-slate-800 mb-4">AutomationSG Council: A Mix of Expertise</h3>
+                    <div class="chart-container">
+                        <canvas id="councilChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-[#0077B6]">A Holistic Approach</h4>
+                        <p class="text-slate-600 mt-2 text-sm">By blending academic research, industrial application, strategic consulting, and innovation, these associations create a self-reinforcing cycle of growth and development.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-[#0077B6]">Government-Industry Synergy</h4>
+                        <p class="text-slate-600 mt-2 text-sm">The active involvement of government advisors ensures that industry initiatives are aligned with national strategic objectives, accelerating progress through public-private partnerships.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg mt-8">
+                <button class="w-full bg-[#0077B6] hover:bg-[#0096C7] text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300" onclick="summarizeSection('associations')">✨ Summarize Section ✨</button>
+                <div id="summary-associations" class="summary-output mt-4 text-sm text-slate-700 bg-indigo-50 p-3 rounded-md hidden"></div>
+            </div>
+        </section>
+
+        <section id="experts" class="py-16 bg-slate-50 rounded-2xl">
+            <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold text-slate-800">The Visionaries Driving Innovation</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">Individual experts in AI and robotics are the engines of progress, turning theoretical research into real-world solutions across a wide range of specializations.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="font-bold text-center text-slate-800 mb-4">Hotbeds of AI & Robotics Research</h3>
+                    <div class="polar-chart-container">
+                        <canvas id="expertiseChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-[#0077B6]">From Lab to Market</h4>
+                        <p class="text-slate-600 mt-2 text-sm">A key trend is the rapid commercialization of research. Leaders are not just publishing papers; they are founding startups, leading corporate AI labs, and directly influencing product development.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg text-[#0077B6]">Diverse National Strategies</h4>
+                        <p class="text-slate-600 mt-2 text-sm">From China's focus on autonomous driving to Taiwan's use of AI in governance and Vietnam's development of local language models, each nation fosters unique areas of excellence.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg mt-8">
+                <button class="w-full bg-[#0077B6] hover:bg-[#0096C7] text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300" onclick="summarizeSection('experts')">✨ Summarize Section ✨</button>
+                <div id="summary-experts" class="summary-output mt-4 text-sm text-slate-700 bg-indigo-50 p-3 rounded-md hidden"></div>
+            </div>
+        </section>
+
+        <section id="insights" class="py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800">Key Strategic Takeaways</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-600">Four major themes emerge from the analysis of Asia's automation leadership.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white border-l-4 border-[#0077B6] p-6 rounded-r-lg shadow-md">
+                    <h4 class="font-bold text-slate-800">1. Ecosystem Approach</h4>
+                    <p id="takeaway-1-content" class="text-slate-600 mt-2 text-sm">Success is built on a holistic ecosystem that integrates academia, industry, startups, and consulting, ensuring well-rounded and sustainable growth.</p>
+                    <button class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-md text-xs transition-all duration-300" onclick="expandTakeaway('Ecosystem Approach', 'Success is built on a holistic ecosystem that integrates academia, industry, startups, and consulting, ensuring well-rounded and sustainable growth.', 'expanded-1')">✨ Expand Insight ✨</button>
+                    <div id="expanded-1" class="summary-output mt-2 text-sm text-slate-700 bg-blue-50 p-3 rounded-md hidden"></div>
+                </div>
+                <div class="bg-white border-l-4 border-[#00B4D8] p-6 rounded-r-lg shadow-md">
+                    <h4 class="font-bold text-lg text-[#00B4D8]">2. Research to Application Bridge</h4>
+                    <p id="takeaway-2-content" class="text-slate-600 mt-2 text-sm">A strong synergy between deep research and commercial application accelerates the creation of tangible products and services from theoretical breakthroughs.</p>
+                    <button class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-md text-xs transition-all duration-300" onclick="expandTakeaway('Research to Application Bridge', 'A strong synergy between deep research and commercial application accelerates the creation of tangible products and services from theoretical breakthroughs.', 'expanded-2')">✨ Expand Insight ✨</button>
+                    <div id="expanded-2" class="summary-output mt-2 text-sm text-slate-700 bg-blue-50 p-3 rounded-md hidden"></div>
+                </div>
+                <div class="bg-white border-l-4 border-[#90E0EF] p-6 rounded-r-lg shadow-md">
+                    <h4 class="font-bold text-lg text-[#90E0EF]">3. Strategic Government Alignment</h4>
+                    <p id="takeaway-3-content" class="text-slate-600 mt-2 text-sm">Top-down alignment between national policy and industry development, via public-private partnerships, coordinates and amplifies growth.</p>
+                    <button class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-md text-xs transition-all duration-300" onclick="expandTakeaway('Strategic Government Alignment', 'Top-down alignment between national policy and industry development, via public-private partnerships, coordinates and amplifies growth.', 'expanded-3')">✨ Expand Insight ✨</button>
+                    <div id="expanded-3" class="summary-output mt-2 text-sm text-slate-700 bg-blue-50 p-3 rounded-md hidden"></div>
+                </div>
+                 <div class="bg-white border-l-4 border-[#03045E] p-6 rounded-r-lg shadow-md">
+                    <h4 class="font-bold text-lg text-[#03045E]">4. Standards & Cybersecurity Focus</h4>
+                    <p id="takeaway-4-content" class="text-slate-600 mt-2 text-sm">A mature approach to industrial transformation is evident, with a heavy focus on adapting international standards and embedding robust cybersecurity.</p>
+                    <button class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-md text-xs transition-all duration-300" onclick="expandTakeaway('Standards & Cybersecurity Focus', 'A mature approach to industrial transformation is evident, with a heavy focus on adapting international standards and embedding robust cybersecurity.', 'expanded-4')">✨ Expand Insight ✨</button>
+                    <div id="expanded-4" class="summary-output mt-2 text-sm text-slate-700 bg-blue-50 p-3 rounded-md hidden"></div>
+                </div>
+            </div>
+             <div class="bg-white p-6 rounded-lg shadow-lg mt-8">
+                <button class="w-full bg-[#0077B6] hover:bg-[#0096C7] text-white font-bold py-2 px-4 rounded-md shadow-md transition-all duration-300" onclick="summarizeSection('insights')">✨ Summarize Section ✨</button>
+                <div id="summary-insights" class="summary-output mt-4 text-sm text-slate-700 bg-indigo-50 p-3 rounded-md hidden"></div>
+            </div>
+        </section>
+
+        <footer class="text-center py-12 border-t mt-12">
+            <p class="text-slate-500">This infographic visualizes data from the "Influential Voices" report.</p>
+        </footer>
+    </div>
+
+<script>
+    const chartTooltipConfig = {
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        if (Array.isArray(label)) {
+                          return label.join(' ');
+                        } else {
+                          return label;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    const wrapLabel = (label) => {
+        if (label.length > 16) {
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + word).length > 16) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        }
+        return label;
+    };
+
+    const geoData = {
+        'Singapore': 18,
+        'China': 4,
+        'Japan': 2,
+        'India': 2,
+        'Malaysia': 2,
+        'Taiwan': 1,
+        'Vietnam': 1
+    };
+    
+    const sortedGeoData = Object.entries(geoData).sort(([,a],[,b]) => b-a);
+
+    let geoChartInstance = new Chart(document.getElementById('geoChart'), {
+        type: 'bar',
+        data: {
+            labels: sortedGeoData.map(item => item[0]),
+            datasets: [{
+                label: 'Number of Influential Leaders',
+                data: sortedGeoData.map(item => item[1]),
+                backgroundColor: ['#0077B6', '#0096C7', '#00B4D8', '#48CAE4', '#90E0EF', '#ADE8F4', '#CAF0F8'],
+                borderColor: '#03045E',
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            ...chartTooltipConfig,
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                       stepSize: 2
+                    }
+                }
+            },
+            plugins: {
+                 ...chartTooltipConfig.plugins,
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    const councilData = {
+        labels: ['Industrial Application & Mfr.', 'Strategic Consulting', 'Academic Research', 'Innovation & Entrepreneurship'],
+        data: [7, 4, 3, 2]
+    };
+
+    new Chart(document.getElementById('councilChart'), {
+        type: 'doughnut',
+        data: {
+            labels: councilData.labels,
+            datasets: [{
+                label: 'Number of Council Members',
+                data: councilData.data,
+                backgroundColor: ['#0077B6', '#00B4D8', '#90E0EF', '#03045E'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            ...chartTooltipConfig,
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                ...chartTooltipConfig.plugins,
+                legend: {
+                    position: 'bottom',
+                },
+            }
+        }
+    });
+    
+    const expertiseData = {
+        labels: [
+            'Autonomous Driving & AI Strategy',
+            'AI Research & Commercialization',
+            'Ethical & Multilingual AI',
+            'Computer Vision & Deep Learning',
+            'Generative AI & LLMs',
+            'Manufacturing & Operations'
+        ].map(wrapLabel),
+        data: [1, 1, 2, 2, 3, 1]
+    };
+
+    let expertiseChartInstance = new Chart(document.getElementById('expertiseChart'), {
+        type: 'polarArea',
+        data: {
+            labels: expertiseData.labels,
+            datasets: [{
+                label: 'Number of Top Experts',
+                data: expertiseData.data,
+                backgroundColor: [
+                    'rgba(3, 4, 94, 0.7)',
+                    'rgba(0, 119, 182, 0.7)',
+                    'rgba(0, 180, 216, 0.7)',
+                    'rgba(144, 224, 239, 0.7)',
+                    'rgba(0, 150, 199, 0.7)',
+                    'rgba(72, 202, 228, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            ...chartTooltipConfig,
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                 ...chartTooltipConfig.plugins,
+                legend: {
+                    position: 'bottom',
+                },
+            },
+            scales: {
+                r: {
+                    pointLabels: {
+                        display: true,
+                        centerPointLabels: true,
+                        font: {
+                            size: 10
+                        }
+                    },
+                    ticks: {
+                       stepSize: 1
+                    }
+                }
+            },
+        }
+    });
+
+    async function summarizeSection(sectionId) {
+        const summaryOutputDiv = document.getElementById(`summary-${sectionId}`);
+        const button = summaryOutputDiv.previousElementSibling; 
+
+        summaryOutputDiv.innerHTML = '<div class="text-center text-gray-500 py-2">Generating summary...</div>';
+        summaryOutputDiv.classList.remove('hidden');
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+
+        let promptText = '';
+        if (sectionId === 'geo-distribution') {
+            const chartLabels = geoChartInstance.data.labels.map(label => Array.isArray(label) ? label.join(' ') : label);
+            const chartData = geoChartInstance.data.datasets[0].data;
+            let geoDataString = chartLabels.map((label, i) => `${label}: ${chartData[i]} leaders`).join(', ');
+            promptText = `Based on the following distribution of influential automation leaders by country: ${geoDataString}, provide a concise summary of the key implications or observations about regional influence in Asian automation. Focus on why certain countries might lead.`;
+        } else if (sectionId === 'associations') {
+            promptText = `Summarize the key role and approach of professional associations in the Asian automation ecosystem, based on the following insights: "Professional associations like Singapore's AutomationSG orchestrate the industry by combining diverse expertise from every corner of the innovation landscape. AutomationSG Council: A Mix of Expertise (Industrial Application & Mfr.: 7, Strategic Consulting: 4, Academic Research: 3, Innovation & Entrepreneurship: 2). A Holistic Approach: By blending academic research, industrial application, strategic consulting, and innovation, these associations create a self-reinforcing cycle of growth and development. Government-Industry Synergy: The active involvement of government advisors ensures that industry initiatives are aligned with national strategic objectives, accelerating progress through public-private partnerships."`;
+        } else if (sectionId === 'experts') {
+            const chartLabels = expertiseChartInstance.data.labels.map(label => Array.isArray(label) ? label.join(' ') : label);
+            const chartData = expertiseChartInstance.data.datasets[0].data;
+            let expertiseDataString = chartLabels.map((label, i) => `${label}: ${chartData[i]} experts`).join(', ');
+            promptText = `Provide a concise summary of the key specializations and trends demonstrated by the top AI and Robotics experts in Asia, based on these areas of expertise and their counts: ${expertiseDataString}. Also consider the text: "From Lab to Market: A key trend is the rapid commercialization of research. Leaders are not just publishing papers; they are founding startups, leading corporate AI labs, and directly influencing product development. Diverse National Strategies: From China's focus on autonomous driving to Taiwan's use of AI in governance and Vietnam's development of local language models, each nation fosters unique areas of excellence."`;
+        } else if (sectionId === 'insights') {
+            promptText = `Provide a very brief, high-level summary of these four key strategic takeaways for the Asian automation leadership, emphasizing their overarching message: 1. Ecosystem Approach: Success is built on a holistic ecosystem that integrates academia, industry, startups, and consulting. 2. Research to Application Bridge: A strong synergy between deep research and commercial application. 3. Strategic Government Alignment: Top-down alignment between national policy and industry development. 4. Standards & Cybersecurity Focus: A mature approach with heavy focus on adapting international standards and embedding robust cybersecurity.`;
+        }
+
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: promptText }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                summaryOutputDiv.innerHTML = text;
+            } else {
+                summaryOutputDiv.innerHTML = 'Failed to generate summary. Please try again.';
+            }
+        } catch (error) {
+            console.error('Error generating AI summary:', error);
+            summaryOutputDiv.innerHTML = 'An error occurred while generating the summary.';
+        } finally {
+            button.disabled = false;
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    async function generateTrendAnalysis() {
+        const analysisOutputDiv = document.getElementById('trend-analysis-output');
+        const button = analysisOutputDiv.previousElementSibling;
+
+        analysisOutputDiv.innerHTML = '<div class="text-center text-gray-500 py-2">Generating trend analysis...</div>';
+        analysisOutputDiv.classList.remove('hidden');
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+
+        const chartLabels = geoChartInstance.data.labels.map(label => Array.isArray(label) ? label.join(' ') : label);
+        const chartData = geoChartInstance.data.datasets[0].data;
+        let geoDataString = chartLabels.map((label, i) => `${label}: ${chartData[i]} leaders`).join(', ');
+
+        const prompt = `Analyze the following geographic distribution of influential automation leaders in Asia: ${geoDataString}. Identify key trends, concentrations, and potential reasons for these patterns. Provide a concise analysis.`;
+
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                analysisOutputDiv.innerHTML = text;
+            } else {
+                analysisOutputDiv.innerHTML = 'Failed to generate analysis. Please try again.';
+            }
+        } catch (error) {
+            console.error('Error generating AI analysis:', error);
+            analysisOutputDiv.innerHTML = 'An error occurred while generating the analysis.';
+        } finally {
+            button.disabled = false;
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    async function expandTakeaway(title, content, outputDivId) {
+        const outputDiv = document.getElementById(outputDivId);
+        const button = outputDiv.previousElementSibling;
+
+        outputDiv.innerHTML = '<div class="text-center text-gray-500 py-2">Expanding insight...</div>';
+        outputDiv.classList.remove('hidden');
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+
+        const prompt = `Expand on the following strategic takeaway about Asian automation leadership: "${title}: ${content}". Provide more detail, examples, or implications, keeping it concise but informative.`;
+
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                outputDiv.innerHTML = `<p class="mt-2 text-sm text-slate-700 bg-blue-50 p-3 rounded-md">${text}</p>`;
+            } else {
+                outputDiv.innerHTML = 'Failed to expand insight. Please try again.';
+            }
+        } catch (error) {
+            console.error('Error expanding insight:', error);
+            outputDiv.innerHTML = 'An error occurred while expanding the insight.';
+        } finally {
+            button.disabled = false;
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+</script>
+
 </body>
 </html>
