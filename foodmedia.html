@@ -8,5 +8,331 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
-    ...
+    <!-- Application Structure Plan: A dashboard-style single-page application is used. The primary navigation is based on filtering by 'Country' and 'Industry'. This structure was chosen because users are most likely to search for editors based on geographic location or specific business sector. This non-linear, filter-driven approach is more intuitive and efficient than scrolling through a long, static report. The main content area dynamically updates with filtered 'editor cards', and interactive charts provide a visual summary of the data, enhancing synthesis and understanding. The user flow is: Land -> See Overview -> Filter by Country/Industry -> Explore Detailed Cards -> View Updated Visualizations. -->
+    <!-- Visualization & Content Choices: Report Info: List of editors, publications, countries, industries. -> Goal: Organize, Compare, Inform. -> Viz/Presentation Method: Interactive filter buttons, a grid of content cards for detailed info, and two doughnut charts (Chart.js) showing the distribution of publications by country and industry. -> Interaction: Clicking filters updates the card grid and both charts. This provides immediate feedback and allows users to cross-reference information easily. -> Justification: This method turns a static list into an explorable database, making complex information accessible. Cards organize details neatly, while charts offer a high-level quantitative overview. -> Library/Method: Vanilla JS for logic, Tailwind for styling, Chart.js for Canvas-based charts. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcfb;
+            color: #3f3f46;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #a16207;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Influential Trade Editors in Southeast Asia</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">An interactive guide to the key voices shaping business-to-business media across the region.</p>
+        </header>
+
+        <main>
+            <section id="filters" class="mb-10 p-6 bg-white rounded-2xl shadow-sm">
+                <div class="mb-6">
+                    <h3 class="font-semibold text-lg text-gray-700 mb-3">Filter by Country</h3>
+                    <div id="country-filters" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg text-gray-700 mb-3">Filter by Industry</h3>
+                    <div id="industry-filters" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+            </section>
+
+            <section id="visualizations" class="mb-12">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800">Media Landscape Overview</h2>
+                    <p class="text-md text-gray-600 mt-1">These charts show the distribution of the profiled publications. Use the filters above to update the view.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Publications by Country</h3>
+                        <div class="chart-container">
+                            <canvas id="countryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Publications by Sector</h3>
+                        <div class="chart-container">
+                            <canvas id="industryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="editors">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800">Featured Editors & Publications</h2>
+                    <p id="results-count" class="text-md text-gray-600 mt-1">Explore the profiles of influential media leaders.</p>
+                </div>
+                <div id="editors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        const editorData = [
+            {
+                name: "Fabia Sugandy",
+                publication: "Southeast Asia Construction (SEAC)",
+                country: "Singapore",
+                industry: "Construction",
+                summary: "As editor of SEAC, Fabia Sugandy shapes the discourse within Asia's construction sector, curating content on critical industry trends, innovations, and regional projects for a specialized readership of professionals."
+            },
+            {
+                name: "Tim Charlton",
+                publication: "Singapore Business Review (SBR)",
+                country: "Singapore",
+                industry: "Business/Finance",
+                summary: "As Publisher & Editor-in-Chief of Charlton Media Group, Tim Charlton has substantial influence across multiple leading B2B publications, shaping business narratives for Singapore's economic elite and beyond."
+            },
+            {
+                name: "Edmund Lee & Joe Lombardo",
+                publication: "LogiSYM Magazine",
+                country: "Singapore",
+                industry: "Logistics/Supply Chain",
+                summary: "This editorial team fosters advanced discussions in the logistics sector. Joe Lombardo's extensive hands-on experience brings deep practical knowledge, positioning the magazine as a forum for thought leaders."
+            },
+            {
+                name: "Audrey Yow & Team",
+                publication: "Asia Pacific Food Industry (APFI)",
+                country: "Singapore",
+                industry: "Food & Beverage",
+                summary: "The editorial team at APFI, a leading trade magazine since 1985, plays a significant role in informing professionals about the latest research, technologies, and market trends in the F&B industry."
+            },
+            {
+                name: "John Snyder & Kevin Turner",
+                publication: "Riviera Maritime Media - Singapore Solutions",
+                country: "Singapore",
+                industry: "Maritime",
+                summary: "With decades of experience, John Snyder guides content on critical maritime topics like decarbonization and technology, influencing senior decision-makers in a sector vital to Singapore's economy."
+            },
+            {
+                name: "Datuk William Ng",
+                publication: "SME Magazine, HR Asia, etc.",
+                country: "Malaysia",
+                industry: "Multi-Industry",
+                summary: "As Group Publisher and Editor-in-Chief of Business Media International, Datuk William Ng is a highly influential figure, overseeing a diverse portfolio of B2B publications with the largest circulation in the region."
+            },
+            {
+                name: "Rachael Philip & Team",
+                publication: "Malaysia Retailer",
+                country: "Malaysia",
+                industry: "Retail",
+                summary: "As the official voice of the Malaysia Retail Chain Association (MRCA), the editorial team holds significant weight in guiding the development and strategic direction of the country's retail sector."
+            },
+            {
+                name: "Ebb Hinchliffe & Leslie Ann Murray",
+                publication: "AmCham Business Journal",
+                country: "Philippines",
+                industry: "Business/Trade",
+                summary: "As leaders of a key publication from the American Chamber of Commerce, this team provides trusted analysis that influences business development, policy, and strategic decisions for US-Philippine trade."
+            },
+            {
+                name: "Mr. Dang Ngoc Bao & Team",
+                publication: "Vietnam Science and Technology Magazine",
+                country: "Vietnam",
+                industry: "Science & Technology",
+                summary: "With direct affiliation to the Ministry of Science and Technology, these editors hold exceptionally influential positions, shaping national scientific policy and research direction in Vietnam's knowledge economy."
+            },
+            {
+                name: "Editorial Team",
+                publication: "Manufacturing Review",
+                country: "Thailand",
+                industry: "Manufacturing",
+                summary: "This bilingual publication is a vital information source for Thailand's manufacturing industry, facilitating cross-border business understanding and identifying opportunities for international trade and investment."
+            },
+            {
+                name: "Dr. Suprada Sukonthabhirom na Pattalung",
+                publication: "Thai Journal of Agricultural Science (TJAS)",
+                country: "Thailand",
+                industry: "Agriculture",
+                summary: "As editor-in-chief of a peer-reviewed scientific journal, Dr. Suprada holds significant academic influence, shaping research directions and promoting best practices in Thailand's agricultural sector."
+            },
+            {
+                name: "Foo Boon Ping & Emmanuel Daniel",
+                publication: "The Asian Banker (TAB Global)",
+                country: "Indonesia",
+                industry: "Finance/Banking",
+                summary: "Leading a prominent research and consulting firm, this team provides strategic information and analysis for financial institutions across Asia, shaping the future of finance through influential publications and events."
+            }
+        ];
+
+        let countryChart, industryChart;
+        let activeCountry = 'All';
+        let activeIndustry = 'All';
+
+        const countryColors = ['#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706', '#b45309'];
+        const industryColors = ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'];
+
+        function createButton(label, type, container) {
+            const button = document.createElement('button');
+            button.textContent = label;
+            button.className = 'nav-button px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-yellow-600 hover:text-white';
+            button.dataset.filter = label;
+            button.onclick = () => {
+                if (type === 'country') {
+                    activeCountry = label;
+                } else {
+                    activeIndustry = label;
+                }
+                renderContent();
+            };
+            container.appendChild(button);
+        }
+
+        function setupFilters() {
+            const countryContainer = document.getElementById('country-filters');
+            const industryContainer = document.getElementById('industry-filters');
+
+            const countries = ['All', ...new Set(editorData.map(e => e.country))];
+            const industries = ['All', ...new Set(editorData.map(e => e.industry))];
+
+            countries.forEach(c => createButton(c, 'country', countryContainer));
+            industries.forEach(i => createButton(i, 'industry', industryContainer));
+        }
+
+        function renderCards(data) {
+            const grid = document.getElementById('editors-grid');
+            grid.innerHTML = '';
+            if (data.length === 0) {
+                 grid.innerHTML = `<p class="text-gray-500 col-span-full text-center">No editors match the selected criteria.</p>`;
+                 return;
+            }
+
+            data.forEach(editor => {
+                const card = document.createElement('div');
+                card.className = 'card bg-white p-6 rounded-2xl shadow-sm flex flex-col';
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold tracking-wider text-yellow-800 bg-yellow-200 rounded-full uppercase">${editor.industry}</span>
+                        <h4 class="text-xl font-bold text-gray-800 mt-4 mb-2">${editor.name}</h4>
+                        <p class="text-sm font-semibold text-yellow-700 mb-3">${editor.publication} - ${editor.country}</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">${editor.summary}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function updateCharts(data) {
+            const countryCounts = {};
+            const industryCounts = {};
+            data.forEach(item => {
+                countryCounts[item.country] = (countryCounts[item.country] || 0) + 1;
+                industryCounts[item.industry] = (industryCounts[item.industry] || 0) + 1;
+            });
+
+            if (countryChart) countryChart.destroy();
+            countryChart = new Chart(document.getElementById('countryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(countryCounts),
+                    datasets: [{
+                        label: 'Publications by Country',
+                        data: Object.values(countryCounts),
+                        backgroundColor: countryColors,
+                        borderColor: '#fdfcfb',
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 15, padding: 15 } },
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            if (industryChart) industryChart.destroy();
+            industryChart = new Chart(document.getElementById('industryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(industryCounts),
+                    datasets: [{
+                        label: 'Publications by Sector',
+                        data: Object.values(industryCounts),
+                        backgroundColor: industryColors,
+                        borderColor: '#fdfcfb',
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 15, padding: 15 } }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+
+        function renderContent() {
+            let filteredData = editorData;
+            if (activeCountry !== 'All') {
+                filteredData = filteredData.filter(e => e.country === activeCountry);
+            }
+            if (activeIndustry !== 'All') {
+                filteredData = filteredData.filter(e => e.industry === activeIndustry);
+            }
+
+            renderCards(filteredData);
+            updateCharts(filteredData);
+            
+            document.querySelectorAll('#country-filters .nav-button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === activeCountry);
+            });
+            document.querySelectorAll('#industry-filters .nav-button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === activeIndustry);
+            });
+            document.getElementById('results-count').textContent = `Showing ${filteredData.length} of ${editorData.length} total profiles.`;
+        }
+
+        window.onload = () => {
+            setupFilters();
+            renderContent();
+        };
+
+    </script>
+</body>
 </html>
