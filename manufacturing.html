@@ -2,10 +2,502 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Manufacturing & Automation Media Landscape</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Manufacturing & Automation Media Landscape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Corporate Harmony -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard. The core is the "Publication Explorer," a filterable grid for finding media outlets. This is supported by sections on "Major Publishers," a "Regional Focus" chart, and "Key Trends". A new "AI Media Planner" tab has been added to provide strategic recommendations, transforming the app from a directory into a planning tool. This structure supports both exploration and strategic planning. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: List of all publications & their attributes. -> Goal: Compare/Organize. -> Viz: Interactive Filterable Grid (HTML/Tailwind/JS). -> Interaction: Users select filters (Region, Focus) to instantly narrow down the list. -> Justification: Transforms a static table into a powerful discovery tool.
+        - Report Info: Publisher ownership of magazines. -> Goal: Inform/Organize. -> Viz: Grouped Lists under Publisher Headings (HTML/Tailwind). -> Justification: Clearly illustrates market consolidation.
+        - Report Info: Number of publications/associations per SEA country. -> Goal: Compare/Inform. -> Viz: Horizontal Bar Chart (Chart.js/Canvas). -> Justification: Provides a quick, quantitative snapshot of media density.
+        - Gemini API Integration 1: Generate Pitch Ideas. -> Goal: Assist User Action. -> Viz: Modal with generated text. -> Interaction: Button click in publication detail modal triggers API call. -> Justification: Adds a powerful, actionable feature that helps users move from research to execution.
+        - Gemini API Integration 2: AI Media Planner. -> Goal: Strategic Planning. -> Viz: Form + Generated List. -> Interaction: User inputs product info, clicks button to trigger API call for a ranked list of publications. -> Justification: Provides high-value strategic recommendations, leveraging the entire publication database.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .tab-button.active { border-color: #10b981; color: #059669; background-color: #f0fdfa; }
+        .tab-button { transition: all 0.2s ease-in-out; }
+        .publication-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .publication-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .modal { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content { transform: scale(0.95); transition: transform 0.3s ease-in-out; }
+        .modal.active .modal-content { transform: scale(1); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-<body>
-    <h1>Manufacturing & Automation Media Landscape</h1>
-    <p>This is the base placeholder. Please paste the full HTML code provided earlier here to complete the file.</p>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Navigating the Manufacturing & Automation Media Landscape</h1>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">An interactive guide to key trade publications, publishers, and trends shaping the industry, now with AI-powered tools.</p>
+        </header>
+
+        <nav class="flex justify-center mb-12 border-b border-slate-200">
+            <div class="flex flex-wrap justify-center -mb-px">
+                <button onclick="showTab('explorer')" class="tab-button active text-sm sm:text-base font-medium text-center text-slate-500 border-b-2 border-transparent px-4 py-3 hover:text-green-600 hover:border-green-300">
+                    <span class="mr-2">🔍</span> Publication Explorer
+                </button>
+                <button onclick="showTab('planner')" class="tab-button text-sm sm:text-base font-medium text-center text-slate-500 border-b-2 border-transparent px-4 py-3 hover:text-green-600 hover:border-green-300">
+                    <span class="mr-2">✨</span> AI Media Planner
+                </button>
+                <button onclick="showTab('publishers')" class="tab-button text-sm sm:text-base font-medium text-center text-slate-500 border-b-2 border-transparent px-4 py-3 hover:text-green-600 hover:border-green-300">
+                    <span class="mr-2">🏢</span> Publisher Landscape
+                </button>
+                <button onclick="showTab('regional')" class="tab-button text-sm sm:text-base font-medium text-center text-slate-500 border-b-2 border-transparent px-4 py-3 hover:text-green-600 hover:border-green-300">
+                    <span class="mr-2">🌏</span> Regional Focus: SEA
+                </button>
+                <button onclick="showTab('trends')" class="tab-button text-sm sm:text-base font-medium text-center text-slate-500 border-b-2 border-transparent px-4 py-3 hover:text-green-600 hover:border-green-300">
+                    <span class="mr-2">📈</span> Key Industry Trends
+                </button>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <div id="explorer-tab" class="tab-content">
+                <section class="mb-12">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-1">Publication Explorer</h2>
+                        <p class="text-slate-600 mb-6">Use the filters to discover trade publications. Click any card for details and AI-powered pitch ideas.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label for="region-filter" class="block text-sm font-medium text-slate-700 mb-1">Region</label>
+                                <select id="region-filter" class="w-full bg-white border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500">
+                                    <option value="all">All Regions</option>
+                                    <option value="Asia/SEA">Asia & Southeast Asia</option>
+                                    <option value="Global/NA">Global & North America</option>
+                                    <option value="Thailand">Thailand</option>
+                                    <option value="Indonesia">Indonesia</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="focus-filter" class="block text-sm font-medium text-slate-700 mb-1">Industry Focus</label>
+                                <select id="focus-filter" class="w-full bg-white border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500">
+                                    <option value="all">All Focus Areas</option>
+                                    <option value="General Automation/Mfg">General Automation/Mfg</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Metalworking">Metalworking</option>
+                                    <option value="Plastics">Plastics</option>
+                                    <option value="Assembly">Assembly</option>
+                                    <option value="Label/Packaging">Label/Packaging</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="format-filter" class="block text-sm font-medium text-slate-700 mb-1">Format</label>
+                                <select id="format-filter" class="w-full bg-white border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500">
+                                    <option value="all">All Formats</option>
+                                    <option value="Digital">Digital</option>
+                                    <option value="Both">Print & Digital</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="publications-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                        <p id="no-results" class="text-center text-slate-500 py-8 hidden">No publications match the selected filters.</p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="planner-tab" class="tab-content" style="display: none;">
+                <section class="mb-12">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-1">✨ AI Media Planner</h2>
+                        <p class="text-slate-600 mb-6">Describe your product, announcement, or key message below. The AI will analyze it and recommend the most relevant publications from our database to target for your media outreach.</p>
+                        
+                        <div class="mb-4">
+                            <label for="planner-input" class="block text-sm font-medium text-slate-700 mb-1">Your Announcement / Product Description:</label>
+                            <textarea id="planner-input" rows="4" class="w-full bg-white border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., 'We are launching a new AI-powered predictive maintenance sensor for CNC machines that reduces downtime by 30%.'"></textarea>
+                        </div>
+                        
+                        <button onclick="handleGeneratePlan()" class="inline-flex items-center bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 transition-colors disabled:bg-slate-400" id="generate-plan-btn">
+                            Generate Media Plan
+                        </button>
+
+                        <div id="planner-results-container" class="mt-8">
+                            <div id="planner-loading" class="hidden flex-col items-center justify-center min-h-[200px]">
+                                <div class="loader"></div>
+                                <p class="mt-4 text-slate-600">Analyzing and building your plan...</p>
+                            </div>
+                            <div id="planner-results"></div>
+                             <div id="planner-error" class="hidden text-center text-red-600 bg-red-50 p-4 rounded-lg">
+                                <p class="font-bold">Oops! Something went wrong.</p>
+                                <p>Could not generate a media plan at this time. Please try again later.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="publishers-tab" class="tab-content" style="display: none;">
+                <section class="mb-12">
+                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-1">Publisher Landscape</h2>
+                        <p class="text-slate-600 mb-6">Explore the major publishing houses and their portfolios of manufacturing and automation magazines. This section highlights the key players shaping the flow of information in the industry.</p>
+                        <div id="publishers-list" class="space-y-8"></div>
+                     </div>
+                </section>
+            </div>
+            
+            <div id="regional-tab" class="tab-content" style="display: none;">
+                <section class="mb-12">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-1">Regional Focus: Southeast Asia Media Presence</h2>
+                        <p class="text-slate-600 mb-6">This chart visualizes the concentration of key publications and industry associations across major Southeast Asian nations. It provides a quick glance at the media density in each country.</p>
+                        <div class="chart-container"><canvas id="regionalChart"></canvas></div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="trends-tab" class="tab-content" style="display: none;">
+                <section class="mb-12">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-1">Key Industry & Media Trends</h2>
+                        <p class="text-slate-600 mb-6">The manufacturing media landscape is shaped by the same forces transforming the industry itself. This section summarizes the critical trends identified in the report.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-slate-100 p-5 rounded-lg"><h3 class="font-bold text-lg mb-2 text-slate-800"><span class="mr-2">📱</span>Digital & Multimedia Dominance</h3><p class="text-slate-600 text-sm">Publishers rely on websites, e-magazines, webinars, and video, making a robust digital footprint essential for relevance and reach.</p></div>
+                            <div class="bg-slate-100 p-5 rounded-lg"><h3 class="font-bold text-lg mb-2 text-slate-800"><span class="mr-2">🎯</span>B2B Marketing Integration</h3><p class="text-slate-600 text-sm">Media outlets are evolving into B2B marketing platforms, offering sponsored content, lead generation, and event marketing.</p></div>
+                            <div class="bg-slate-100 p-5 rounded-lg"><h3 class="font-bold text-lg mb-2 text-slate-800"><span class="mr-2">📍</span>Hyper-Localization & Niche Focus</h3><p class="text-slate-600 text-sm">Demand is high for country-specific and sub-sector specialized content, often in local languages, to address unique market needs.</p></div>
+                            <div class="bg-slate-100 p-5 rounded-lg"><h3 class="font-bold text-lg mb-2 text-slate-800"><span class="mr-2">⚙️</span>Industry 4.0 at the Core</h3><p class="text-slate-600 text-sm">Editorial content is heavily focused on IIoT, AI, advanced robotics, and OT cybersecurity to guide industry adoption.</p></div>
+                            <div class="bg-slate-100 p-5 rounded-lg"><h3 class="font-bold text-lg mb-2 text-slate-800"><span class="mr-2">♻️</span>Sustainability & Resilience</h3><p class="text-slate-600 text-sm">Green manufacturing, energy efficiency, and resilient supply chains are increasingly prominent themes reflecting strategic priorities.</p></div>
+                            <div class="bg-slate-100 p-5 rounded-lg"><h3 class="font-bold text-lg mb-2 text-slate-800"><span class="mr-2">👥</span>Workforce Development</h3><p class="text-slate-600 text-sm">Addressing labor shortages and the skills gap created by automation is a recurrent topic, highlighting the human element.</p></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 pt-6 border-t border-slate-200"><p class="text-sm text-slate-500">This interactive application was generated based on the "Navigating the Manufacturing and Automation Media Landscape" report.</p></footer>
+    </div>
+
+    <div id="publication-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 id="modal-title" class="text-2xl font-bold text-slate-900"></h2>
+                        <p id="modal-publisher" class="text-sm text-slate-500"></p>
+                    </div>
+                    <button onclick="closeModal('publication-modal')" class="text-4xl font-light text-slate-400 hover:text-slate-800 leading-none">&times;</button>
+                </div>
+                <div class="space-y-4">
+                    <div><h3 class="font-semibold text-slate-800">Primary Focus</h3><p id="modal-focus" class="text-slate-600"></p></div>
+                    <div><h3 class="font-semibold text-slate-800">Target Audience</h3><p id="modal-audience" class="text-slate-600"></p></div>
+                    <div><h3 class="font-semibold text-slate-800">Geographic Scope</h3><p id="modal-scope" class="text-slate-600"></p></div>
+                    <div><h3 class="font-semibold text-slate-800">Available Formats</h3><p id="modal-format" class="text-slate-600"></p></div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-slate-200 flex justify-between items-center flex-wrap gap-4">
+                    <button onclick="handleGeneratePitches()" class="inline-flex items-center bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+                        <span class="mr-2">✨</span> Generate Pitch Ideas
+                    </button>
+                    <a id="modal-website" href="#" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">Visit Website ➔</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="ai-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+             <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 class="text-2xl font-bold text-green-700">✨ AI-Generated Pitch Ideas</h2>
+                    <button onclick="closeModal('ai-modal')" class="text-4xl font-light text-slate-400 hover:text-slate-800 leading-none">&times;</button>
+                </div>
+                <div id="ai-loading" class="flex flex-col items-center justify-center min-h-[200px]">
+                    <div class="loader"></div>
+                    <p class="mt-4 text-slate-600">Generating ideas...</p>
+                </div>
+                <div id="ai-content" class="hidden prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-slate-800 prose-p:text-slate-600"></div>
+                <div id="ai-error" class="hidden text-center text-red-600 bg-red-50 p-4 rounded-lg">
+                    <p class="font-bold">Oops! Something went wrong.</p>
+                    <p>Could not generate pitches at this time. Please try again later.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const publications = [
+        { name: "Assembly Magazine", publisher: "BNP Media", focus: "Assembly technology, robotics, AI, lean manufacturing", audience: "Manufacturing & assembly operations professionals", scope: "Global/NA", format: "Digital", tags: ["Assembly", "General Automation/Mfg"], website: "https://www.assemblymag.com" },
+        { name: "Automation.com", publisher: "International Society of Automation (ISA)", focus: "Industry 4.0, IIoT, smart manufacturing, cybersecurity", audience: "Automation & control professionals (plant to boardroom)", scope: "Global/NA", format: "Digital", tags: ["General Automation/Mfg"], website: "https://www.automation.com" },
+        { name: "ManufacturingTomorrow.com", publisher: "BTH Management", focus: "Advanced manufacturing, factory automation, 3D printing", audience: "Professionals in manufacturing & automation", scope: "Global/NA", format: "Digital", tags: ["General Automation/Mfg"], website: "https://www.manufacturingtomorrow.com" },
+        { name: "Asia Manufacturing News", publisher: "JEZ Media", focus: "Manufacturing business success, regional developments", audience: "Business people in Asia", scope: "Asia/SEA", format: "Both", tags: ["General Automation/Mfg"], website: "https://www.asiamanufacturingnewstoday.com" },
+        { name: "Automate Asia Magazine", publisher: "FBI Publications / Fireworks", focus: "Automation, robotics, Industry 4.0, ASEAN trends", audience: "Manufacturing & automation professionals in ASEAN", scope: "Asia/SEA", format: "Both", tags: ["General Automation/Mfg"], website: "http://asiaautomate.com/" },
+        { name: "Industrial Automation Asia (IAA)", publisher: "C3 Media / Eastern Trade Media", focus: "Industrial automation, robotics, AI, energy storage, EV", audience: "Top management, engineers, decision-makers in ASEAN", scope: "Asia/SEA", format: "Both", tags: ["General Automation/Mfg"], website: "https://iaasiaonline.com/" },
+        { name: "Asia Pacific Metalworking Equipment News (APMEN)", publisher: "C3 Media / Eastern Trade Media", focus: "Metalworking equipment, machining, metrology", audience: "Professionals in automotive, aerospace, die & mould", scope: "Asia/SEA", format: "Both", tags: ["Metalworking"], website: "https://www.equipment-news.com" },
+        { name: "Global SMT & Packaging (Asia/SEA Editions)", publisher: "Trafalgar Publications Ltd", focus: "Electronics manufacturing, SMT, packaging", audience: "Electronics manufacturing professionals", scope: "Asia/SEA", format: "Both", tags: ["Electronics", "Label/Packaging"], website: "http://globalsmtasia.com/" },
+        { name: "EE Times Asia", publisher: "AspenCore Media (Arrow)", focus: "Electronics industry news, design cycle, semiconductors", audience: "Design engineers, engineering management", scope: "Asia/SEA", format: "Digital", tags: ["Electronics"], website: "https://www.eetimes.asia" },
+        { name: "Manufacturing Review (Thailand)", publisher: "Smart Trade Publications", focus: "Machine tools for Thai manufacturing industry", audience: "Executives, factory managers, engineers in Thailand", scope: "Thailand", format: "Both", tags: ["Metalworking", "General Automation/Mfg"], website: "https://www.manufacturing-review.com" },
+        { name: "Asia Manufacturing Review", publisher: "SILICONMEDIA TECHNOLOGIES", focus: "Asian manufacturing landscape, Industry 4.0, robotics", audience: "Stakeholders of Asia's economic growth", scope: "Asia/SEA", format: "Both", tags: ["General Automation/Mfg"], website: "https://www.asiamanufacturingreview.com" },
+        { name: "International Metalworking News for Asia (IMNA)", publisher: "Ringier Trade Media Ltd", focus: "Metalworking, lasers, tooling, software, metrology", audience: "Manufacturing decision-makers, plant managers in Asia", scope: "Asia/SEA", format: "Both", tags: ["Metalworking"], website: "https://www.industrysourcing.com/magazine/imna" },
+        { name: "International Plastics News for Asia (IRNA)", publisher: "Ringier Trade Media Ltd", focus: "Plastics & rubber industry in Asia Pacific", audience: "Decision-makers in plastics processing companies", scope: "Asia/SEA", format: "Both", tags: ["Plastics"], website: "https://www.industrysourcing.com/plastics" },
+        { name: "Automate Indonesia Magazine", publisher: "FBI Publications / Fireworks", focus: "Manufacturing and automation in Indonesia", audience: "Indonesian automation industry professionals", scope: "Indonesia", format: "Both", tags: ["General Automation/Mfg"], website: "http://asiaautomate.com/" },
+        { name: "Label & Narrow Web", publisher: "Rodman Media (Global)", focus: "Label printing industry, digital technologies, innovation", audience: "Label & narrow web industry professionals", scope: "Global/NA", format: "Both", tags: ["Label/Packaging"], website: "https://www.labelandnarrowweb.com" },
+        { name: "Manufacturing Technology Insights", publisher: "N/A", focus: "Manufacturing trends, robotics, connectivity tools", audience: "Chief Manufacturing Officers, Inventory Managers", scope: "Global/NA", format: "Digital", tags: ["General Automation/Mfg"], website: "https://www.manufacturingtechnologyinsights.com" },
+    ];
+    
+    const publishers = [
+        { name: "FBI Publications / Fireworks Trade Media Group", magazines: ["Automate Asia Magazine", "Automate Indonesia Magazine"], strategy: "A significant regional player in SEA with an integrated media strategy combining publications, trade exhibitions (JUZ Talk), and market intelligence services." },
+        { name: "C3 Media Pte Ltd / Eastern Trade Media", magazines: ["Industrial Automation Asia (IAA)", "Asia Pacific Metalworking Equipment News (APMEN)"], strategy: "A Singapore-based publisher with a portfolio of specialized B2B magazines for key Asian industrial sectors, emphasizing a digital-first approach." },
+        { name: "Ringier Trade Media Ltd", magazines: ["International Metalworking News for Asia (IMNA)", "International Plastics News for Asia (IRNA)"], strategy: "A major B2B publisher in Asia focusing on technology transfer through a multimedia approach including print, digital, apps, and technical conferences." },
+        { name: "International Society of Automation (ISA)", magazines: ["Automation.com"], strategy: "A globally recognized professional body and standards developer, lending significant credibility to its comprehensive digital media platform." },
+        { name: "AspenCore Media (an Arrow Electronics company)", magazines: ["EE Times Asia"], strategy: "Owner of influential electronics media brands, leveraging its connection to a major global components distributor to provide news and analysis." },
+        { name: "Trafalgar Publications Ltd", magazines: ["Global SMT & Packaging (Asia/SEA Editions)"], strategy: "Publisher of a key technical magazine for electronics assembly, extending its reach with specific quarterly editions for China and Southeast Asia." },
+    ];
+    
+    const regionalData = {
+        labels: ['Singapore', 'Malaysia', 'Thailand', 'Indonesia', 'Vietnam', 'Philippines'],
+        datasets: [{
+            label: 'Key Media & Association Mentions',
+            data: [5, 4, 3, 3, 2, 2],
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderColor: 'rgba(5, 150, 105, 1)',
+            borderWidth: 1
+        }]
+    };
+
+    const publicationsGrid = document.getElementById('publications-grid');
+    const regionFilter = document.getElementById('region-filter');
+    const focusFilter = document.getElementById('focus-filter');
+    const formatFilter = document.getElementById('format-filter');
+    const noResults = document.getElementById('no-results');
+    
+    let currentPublicationForAI = null;
+
+    function renderPublications() {
+        const region = regionFilter.value;
+        const focus = focusFilter.value;
+        const format = formatFilter.value;
+
+        const filtered = publications.filter(p => (region === 'all' || p.scope === region) && (focus === 'all' || p.tags.includes(focus)) && (format === 'all' || p.format === format || (format === 'Both' && p.format === 'Both')));
+        
+        publicationsGrid.innerHTML = '';
+        noResults.style.display = filtered.length === 0 ? 'block' : 'none';
+
+        filtered.forEach(pub => {
+            const card = document.createElement('div');
+            card.className = 'publication-card bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between cursor-pointer';
+            card.onclick = () => openModal('publication-modal', pub);
+            card.innerHTML = `
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900">${pub.name}</h3>
+                    <p class="text-sm text-slate-500 mb-3">by ${pub.publisher}</p>
+                    <p class="text-sm text-slate-600 mb-4">${pub.focus.substring(0, 100)}...</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="text-xs font-medium bg-blue-100 text-blue-800 py-1 px-2 rounded-full">${pub.scope}</span>
+                    ${pub.tags.map(tag => `<span class="text-xs font-medium bg-slate-100 text-slate-800 py-1 px-2 rounded-full">${tag}</span>`).join('')}
+                </div>`;
+            publicationsGrid.appendChild(card);
+        });
+    }
+
+    function renderPublishers() {
+        const list = document.getElementById('publishers-list');
+        list.innerHTML = '';
+        publishers.forEach(pub => {
+            const item = document.createElement('div');
+            item.className = 'bg-slate-100 p-6 rounded-lg';
+            item.innerHTML = `
+                <h3 class="text-xl font-bold text-slate-900 mb-2">${pub.name}</h3>
+                <p class="text-slate-600 mb-4">${pub.strategy}</p>
+                <div class="border-t border-slate-300 pt-3">
+                    <h4 class="text-sm font-semibold text-slate-500 mb-2">KEY PUBLICATIONS:</h4>
+                    <div class="flex flex-wrap gap-2">
+                         ${pub.magazines.map(mag => `<span class="text-sm font-medium bg-white text-slate-700 py-1 px-3 rounded-full border border-slate-300">${mag}</span>`).join('')}
+                    </div>
+                </div>`;
+            list.appendChild(item);
+        });
+    }
+
+    function openModal(modalId, data) {
+        if (data) {
+            currentPublicationForAI = data;
+            document.getElementById('modal-title').innerText = data.name;
+            document.getElementById('modal-publisher').innerText = `by ${data.publisher}`;
+            document.getElementById('modal-focus').innerText = data.focus;
+            document.getElementById('modal-audience').innerText = data.audience;
+            document.getElementById('modal-scope').innerText = data.scope;
+            document.getElementById('modal-format').innerText = data.format === 'Both' ? 'Print & Digital' : 'Digital';
+            document.getElementById('modal-website').href = data.website;
+        }
+        const modal = document.getElementById(modalId);
+        modal.classList.add('active');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    async function handleGeneratePitches() {
+        if (!currentPublicationForAI) return;
+        
+        openModal('ai-modal');
+        document.getElementById('ai-loading').style.display = 'flex';
+        document.getElementById('ai-content').style.display = 'none';
+        document.getElementById('ai-error').style.display = 'none';
+
+        const pub = currentPublicationForAI;
+        const prompt = `You are a PR expert specializing in the manufacturing and automation industry. For a publication named '${pub.name}' which focuses on '${pub.focus}' and targets '${pub.audience}', generate 3 distinct and compelling article pitch ideas. Format each pitch clearly with a headline and a brief summary.`;
+
+        try {
+            const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates[0].content.parts[0].text) {
+                const text = result.candidates[0].content.parts[0].text;
+                const formattedText = text
+                    .replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>') 
+                    .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+                    .split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
+                document.getElementById('ai-content').innerHTML = formattedText;
+                document.getElementById('ai-content').style.display = 'block';
+            } else {
+                throw new Error("Invalid response from API");
+            }
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            document.getElementById('ai-error').style.display = 'block';
+        } finally {
+            document.getElementById('ai-loading').style.display = 'none';
+        }
+    }
+
+    async function handleGeneratePlan() {
+        const plannerInput = document.getElementById('planner-input');
+        const generateBtn = document.getElementById('generate-plan-btn');
+        const resultsContainer = document.getElementById('planner-results');
+        const loading = document.getElementById('planner-loading');
+        const errorContainer = document.getElementById('planner-error');
+        
+        if (!plannerInput.value.trim()) {
+            alert("Please describe your product or announcement.");
+            return;
+        }
+
+        generateBtn.disabled = true;
+        generateBtn.innerText = 'Generating...';
+        loading.style.display = 'flex';
+        resultsContainer.innerHTML = '';
+        errorContainer.style.display = 'none';
+
+        const publicationsContext = JSON.stringify(publications.map(p => ({ name: p.name, focus: p.focus, audience: p.audience, scope: p.scope })));
+        const prompt = `As a PR strategist in the manufacturing/automation sector, analyze the following announcement: "${plannerInput.value}". From the provided list of publications, select the top 3-5 most relevant outlets for media outreach. For each, provide a brief justification explaining why it's a strategic fit. Here is the list of publications: ${publicationsContext}`;
+
+        try {
+            const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            planTitle: { type: "STRING" },
+                            recommendations: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        publicationName: { type: "STRING" },
+                                        justification: { type: "STRING" }
+                                    },
+                                    required: ["publicationName", "justification"]
+                                }
+                            }
+                        },
+                        required: ["planTitle", "recommendations"]
+                    }
+                }
+            };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            if (result.candidates && result.candidates[0].content.parts[0].text) {
+                const jsonText = result.candidates[0].content.parts[0].text;
+                const parsedJson = JSON.parse(jsonText);
+                
+                let html = `<h3 class="text-xl font-bold text-slate-900 mb-4">${parsedJson.planTitle}</h3><div class="space-y-4">`;
+                parsedJson.recommendations.forEach(rec => {
+                    const originalPub = publications.find(p => p.name === rec.publicationName);
+                    html += `
+                        <div class="bg-slate-100 p-4 rounded-lg border border-slate-200">
+                            <h4 class="font-bold text-lg text-green-800">${rec.publicationName}</h4>
+                            ${originalPub ? `<p class="text-xs text-slate-500 mb-2">Focus: ${originalPub.focus}</p>` : ''}
+                            <p class="text-slate-600"><strong class="text-slate-700">Justification:</strong> ${rec.justification}</p>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+                resultsContainer.innerHTML = html;
+            } else {
+                throw new Error("Invalid or empty response from API");
+            }
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            errorContainer.style.display = 'block';
+        } finally {
+            loading.style.display = 'none';
+            generateBtn.disabled = false;
+            generateBtn.innerText = 'Generate Media Plan';
+        }
+    }
+
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`${tabId}-tab`).style.display = 'block';
+        document.querySelector(`button[onclick="showTab('${tabId}')"]`).classList.add('active');
+    }
+    
+    let regionalChartInstance = null;
+    function renderRegionalChart() {
+        if (regionalChartInstance) regionalChartInstance.destroy();
+        const ctx = document.getElementById('regionalChart').getContext('2d');
+        regionalChartInstance = new Chart(ctx, {
+            type: 'bar', data: regionalData,
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                scales: { x: { beginAtZero: true, title: { display: true, text: 'Number of Key Entities' } }, y: { grid: { display: false } } },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.raw} mentions` } } }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set initial active tab
+        showTab('explorer');
+        renderPublications();
+        renderPublishers();
+        renderRegionalChart();
+        [regionFilter, focusFilter, formatFilter].forEach(el => el.addEventListener('change', renderPublications));
+        document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', (e) => { if (e.target === m) closeModal(m.id); }));
+    });
+</script>
 </body>
 </html>
