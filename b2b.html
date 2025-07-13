@@ -9,9 +9,405 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Additional custom styles and scripts would go here -->
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA uses a dashboard-like, thematic structure. A sticky top navigation allows users to switch between a high-level 'Overview', the 'Methodology', and deep dives into four key 'Industries'. This non-linear approach was chosen for usability, allowing users to directly access the sections most relevant to them. The 'Overview' combines an interactive chart with key report stats for immediate impact. Each 'Industry' section uses an interactive card-based system to present publications, with click-to-reveal details. This structure transforms the dense report into a digestible, engaging, and user-driven exploratory experience rather than a linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: GDP contribution by sector for key APAC economies. -> Goal: Compare -> Viz: Interactive Doughnut Chart (Chart.js/Canvas) -> Interaction: Dropdown to select country, chart updates dynamically. -> Justification: Visualizes economic structure comparison effectively.
+        - Report Info: Methodology criteria (Readership, Content Quality, etc.). -> Goal: Inform/Organize -> Viz: Icon-driven feature list (HTML/Tailwind) -> Interaction: Clickable icons to reveal detailed descriptions in a modal. -> Justification: Makes dense text engaging and less overwhelming.
+        - Report Info: Detailed publication data (publisher, editors, focus). -> Goal: Organize/Explore -> Viz: Card-based layout (HTML/Tailwind) -> Interaction: Click card to open a modal with full details. -> Justification: Organizes a large amount of information cleanly, preventing cognitive overload and encouraging exploration.
+        - Report Info: Key statistics (e.g., 60% global output, 73% trust in thought leadership). -> Goal: Inform -> Viz: Styled "Stat Blocks" (HTML/Tailwind). -> Interaction: None. -> Justification: Highlights crucial data points for quick consumption.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+        .nav-btn:not(.active):hover {
+            background-color: #e0e7ff; /* indigo-100 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
 </head>
-<body>
-    <!-- Body content truncated for brevity -->
+<body class="antialiased">
+    <div id="app" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2">The APAC B2B Media Landscape</h1>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">An interactive exploration of influential trade publications, publishers, and editors shaping key industries across the Asia Pacific region.</p>
+        </header>
+
+        <nav class="sticky top-2 z-30 bg-white/70 backdrop-blur-md rounded-xl shadow-md p-2 mb-10 max-w-3xl mx-auto">
+            <div class="flex flex-wrap justify-center gap-2">
+                <button data-section="overview" class="nav-btn px-4 py-2 text-sm font-semibold rounded-lg">Overview</button>
+                <button data-section="methodology" class="nav-btn px-4 py-2 text-sm font-semibold rounded-lg">Methodology</button>
+                <button data-section="electronics" class="nav-btn px-4 py-2 text-sm font-semibold rounded-lg">Electronics</button>
+                <button data-section="automotive" class="nav-btn px-4 py-2 text-sm font-semibold rounded-lg">Automotive</button>
+                <button data-section="construction" class="nav-btn px-4 py-2 text-sm font-semibold rounded-lg">Construction</button>
+                <button data-section="finance" class="nav-btn px-4 py-2 text-sm font-semibold rounded-lg">Financial Services</button>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <!-- Overview Section -->
+            <section id="overview" class="content-section space-y-12">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4 text-center">The Engine of Global Growth</h2>
+                    <p class="text-slate-600 text-center max-w-4xl mx-auto mb-8">The Asia-Pacific region is the primary driver of the global economy, underpinned by a diverse industrial landscape and rapid technological advancement. This environment creates a critical need for specialized B2B media to provide market intelligence and strategic insights. The most influential publications are those delivering deep, niche content and embracing digital transformation to foster trust with decision-makers.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                        <div class="bg-indigo-50 p-6 rounded-lg">
+                            <p class="text-4xl font-bold text-indigo-600">>60%</p>
+                            <p class="text-slate-700 mt-1">Projected contribution to global output by 2040.</p>
+                        </div>
+                        <div class="bg-indigo-50 p-6 rounded-lg">
+                            <p class="text-4xl font-bold text-indigo-600">73%</p>
+                            <p class="text-slate-700 mt-1">of B2B decision-makers find thought-leadership more trustworthy than marketing materials.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">APAC Economic Landscape: A Snapshot</h2>
+                     <p class="text-slate-600 text-center max-w-3xl mx-auto mb-6">Key economies in the APAC region demonstrate diverse industrial strengths. Select a country to explore the contribution of its major sectors to GDP. This highlights the specialized nature of each market and the need for tailored B2B media coverage.</p>
+                    <div class="flex justify-center mb-4">
+                        <select id="country-selector" class="border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option value="China" selected>China</option>
+                            <option value="Japan">Japan</option>
+                            <option value="India">India</option>
+                            <option value="Malaysia">Malaysia</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="gdpChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Methodology Section -->
+            <section id="methodology" class="content-section bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 text-center">Framework for Assessing Influence</h2>
+                <p class="text-slate-600 text-center max-w-3xl mx-auto mb-10">Identifying the most influential B2B publications requires a holistic framework that goes beyond simple readership numbers. Excellence is measured by a combination of audience relevance, content depth, digital prowess, industry recognition, and editorial expertise. Click on an icon below to learn more about each criterion.</p>
+                <div id="methodology-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 text-center">
+                </div>
+            </section>
+            
+            <!-- Industry Sections -->
+            <section id="electronics" class="content-section space-y-8">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Electronics & Semiconductors</h2>
+                    <p class="text-slate-600 text-center max-w-3xl mx-auto">As the global epicenter for digital transformation, the APAC electronics industry is driven by Industry 4.0, automation, and government initiatives. Trade publications in this space are crucial for navigating supply chain dynamics, advanced manufacturing strategies, and emerging technologies like AI and IoT.</p>
+                </div>
+                <div id="publications-electronics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="automotive" class="content-section space-y-8">
+                 <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Automotive & Mobility</h2>
+                    <p class="text-slate-600 text-center max-w-3xl mx-auto">The APAC automotive sector is undergoing a profound transformation fueled by electric vehicle (EV) adoption, automation, and the rise of new manufacturing powerhouses. B2B media is essential for tracking technological shifts, competitive dynamics, and the evolving regulatory landscape for EVs and smart driving systems.</p>
+                </div>
+                <div id="publications-automotive" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="construction" class="content-section space-y-8">
+                 <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Construction & Infrastructure</h2>
+                    <p class="text-slate-600 text-center max-w-3xl mx-auto">Sustained investment in infrastructure is a key driver of APAC's growth. The construction industry is rapidly adopting digital and sustainable innovations. Trade publications are vital for tracking large-scale projects, understanding smart technologies, and navigating the financial and regulatory frameworks that shape the built environment.</p>
+                </div>
+                <div id="publications-construction" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="finance" class="content-section space-y-8">
+                 <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Financial Services & Fintech</h2>
+                    <p class="text-slate-600 text-center max-w-3xl mx-auto">APAC's financial sector is being reshaped by accelerated digital transformation, fintech innovation, and the mainstreaming of digital assets. Influential publications are indispensable for navigating complex regulations, understanding the impact of AI, and identifying emerging business models in digital banking, payments, and sustainable finance.</p>
+                </div>
+                <div id="publications-finance" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-12 text-slate-500 text-sm">
+            <p>Interactive Report generated based on "The Asia Pacific B2B Media Landscape" report.</p>
+            <p>&copy; 2025. All data derived from source material.</p>
+        </footer>
+    </div>
+
+    <!-- Modal for details -->
+    <div id="modal-container" class="hidden"></div>
+    
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const appData = {
+        gdp: {
+            "China": { labels: ["Industry", "Services", "Agriculture"], data: [34, 54, 12], colors: ['#6366f1', '#a5b4fc', '#e0e7ff'] },
+            "Japan": { labels: ["Machinery, Electronics, Vehicles", "Other Services/Industries"], data: [50, 50], colors: ['#818cf8', '#c7d2fe'] },
+            "India": { labels: ["Services (inc. IT)", "Industry", "Agriculture"], data: [55, 25, 20], colors: ['#6366f1', '#a5b4fc', '#e0e7ff'] },
+            "Malaysia": { labels: ["Manufacturing", "Services", "Other"], data: [40, 55, 5], colors: ['#818cf8', '#c7d2fe', '#eef2ff'] }
+        },
+        methodology: [
+            { id: 'readership', title: 'Audience Relevance', icon: '👥', description: "Influence is measured by the concentration of C-suite executives and key decision-makers within a publication's readership, rather than raw circulation numbers. A highly targeted audience of industry leaders holds more strategic value." },
+            { id: 'content', title: 'Content Quality', icon: '💡', description: "The ability to provide original, in-depth, and actionable content, including market analysis, technical articles, and forward-looking perspectives that shape industry discourse. This establishes the publication as a thought leader." },
+            { id: 'digital', title: 'Digital Presence', icon: '🌐', description: "A strong multi-platform digital strategy is crucial. This includes a mobile-optimized website, newsletters, social media engagement, podcasts, and virtual events to reach modern B2B audiences effectively." },
+            { id: 'awards', title: 'Industry Recognition', icon: '🏆', description: "External validation from reputable industry awards provides an objective measure of a publication's quality, impact, and journalistic standards, enhancing its credibility and trustworthiness." },
+            { id: 'editorial', title: 'Editorial Expertise', icon: '✍️', description: "The knowledge, experience, and professional networks of the editorial team directly influence content quality. A team of seasoned experts ensures the content is accurate, insightful, and strategically relevant." },
+            { id: 'focus', title: 'Market Focus', icon: '🎯', description: "Given APAC's diversity, publications with a clear geographic and industry-specific focus often provide more tailored and actionable insights, establishing deeper authority within their niche market." },
+        ],
+        publications: {
+            electronics: [
+                { name: "EE Times Asia", publisher: "AspenCore Media", focus: "Electronics design cycle, IoT, semiconductors, AI.", details: { contacts: "Judith Cheng, Nitin Dahad, Maurizio Di Paolo Emilio, Sally Ward-Foxton, Stephen Las Marias, Cyrus Krohn (Publisher)", geo: "Asia-wide", engagement: "Online news, webinars, events, social media.", influence: "Its long-standing presence and global reach establish it as a foundational, authoritative source for electronics professionals, with a strong focus on emerging technologies." } },
+                { name: "Global SMT & Packaging", publisher: "Trafalgar Publications Ltd.", focus: "Electronics manufacturing, SMT, advanced packaging.", details: { contacts: "Trevor Galbraith (Editor-in-Chief), Sandy Daneau (Director of Sales)", geo: "International with quarterly China & Southeast Asia editions", engagement: "Print editions, newsletters, podcasts, tech talks.", influence: "Its specialized focus on SMT and packaging, with tailored regional editions, makes it highly relevant for manufacturers in key APAC hubs." } },
+                { name: "Industrial Automation Asia", publisher: "C3 Media Pte Ltd", focus: "Industrial automation, robotics, AI, Industry 4.0.", details: { contacts: "Ahmad Alshidiq (Editor)", geo: "Southeast Asia", engagement: "Online publication, print magazine, webinars, reaching 37,000+ professionals.", influence: "Its sharp focus on Industry 4.0 aligns directly with APAC's push towards advanced manufacturing, making it a critical channel for decision-makers." } },
+                { name: "Semiconductor Digest", publisher: "Gold Flag Media LLC", focus: "Semiconductor design, manufacturing, packaging, testing.", details: { contacts: "Kerry Hoffman (Co-Founder/Publisher), Peter Singer (Co-Founder/Editor-in-Chief)", geo: "Global with focus on industry trends", engagement: "Website, magazine (8x/year), 7 newsletters (including AI Digest).", influence: "The deep expertise of its veteran editorial staff makes it an exceptionally authoritative source across the entire semiconductor lifecycle." } },
+                { name: "Silicon Semiconductor", publisher: "Angel Business Communications", focus: "Semiconductor manufacturing trends, AI integration.", details: { contacts: "Phil Alsop (Editor), Jackie Cannon (Director of Publishing)", geo: "Global perspective with focus on worldwide trends", engagement: "Online news, features, analysis, magazine archive, videos.", influence: "Its global lens is indispensable for understanding the interconnected nature of the industry, especially given APAC's dominant role." } },
+            ],
+            automotive: [
+                { name: "Autocar Professional (India)", publisher: "Haymarket SAC", focus: "Indian automotive industry, manufacturing, retail.", details: { contacts: "Sumantra B Barooah (Editor), Mayank Dhingra (Executive Editor)", geo: "India, with updates on China & SEA", engagement: "Bi-monthly magazine, online news.", influence: "Its deep, dedicated coverage of the rapidly growing Indian market makes it an indispensable resource for businesses operating in or entering India." } },
+                { name: "autoASIA", publisher: "Indooroopilly Media", focus: "ASEAN automotive industry, parts, EVs.", details: { contacts: "Not specified", geo: "ASEAN (esp. Thailand, Indonesia)", engagement: "Bi-monthly print and digital business magazine.", influence: "Its precise geographic focus on ASEAN, highlighting key production hubs, is exceptionally relevant for regional players and supply chain analysis." } },
+                { name: "CarNewsChina.com", publisher: "CarNewsChina.com", focus: "China auto news, new energy vehicles (EVs, PHEVs).", details: { contacts: "Adrian Leung, Denis Bobylev (Authors)", geo: "China", engagement: "Online news platform.", influence: "Given China's dominance in NEVs, this is an essential source for understanding the world's largest and most dynamic auto market." } },
+                { name: "APAC Outlook Magazine (Auto)", publisher: "Outlook Publishing Ltd.", focus: "Corporate stories, executive interviews.", details: { contacts: "Jack Salter (Head of Editorial)", geo: "Asia-Pacific", engagement: "Digital magazine and website.", influence: "Provides high-level corporate profiles and strategic insights into the regional industry's leadership and direction." } },
+            ],
+            construction: [
+                { name: "PRC Magazine", publisher: "ROF Media", focus: "Construction, infrastructure, real estate, design.", details: { contacts: "Mike Staley (Publisher), Bryan Chan (Business Development)", geo: "Pacific Rim", engagement: "Print magazine, online news, events.", influence: "Its extensive coverage across all facets of construction positions it as a central, influential resource for professionals in the Pacific Rim." } },
+                { name: "APAC Outlook Magazine (Construction)", publisher: "Outlook Publishing Ltd.", focus: "Innovative trends, technology, corporate stories.", details: { contacts: "Jack Salter (Head of Editorial)", geo: "Asia-Pacific", engagement: "Digital magazine and website.", influence: "Its focus on executive interviews and 'transformative ideas' provides a valuable strategic perspective on the industry's evolution." } },
+            ],
+            finance: [
+                { name: "Asian Banking & Finance", publisher: "Charlton Media Group", focus: "Commercial, retail, and investment banking.", details: { contacts: "Tim Charlton (Editor-in-Chief), Emmanuel Daniel, Dandreb Christopher Salangsang", geo: "Asia-wide", engagement: "Quarterly print, daily refreshed website, events.", influence: "Its broad coverage and focus on senior management readership make it a highly influential source for Asia's financial leaders." } },
+                { name: "WealthBriefingAsia", publisher: "ClearView Financial Media", focus: "Wealth management and private banking.", details: { contacts: "Tom Burroughes (Group Editor), Stephen Harris (Publisher)", geo: "Asia-focused (esp. Hong Kong, Singapore)", engagement: "Daily news and analysis service.", influence: "Its niche focus and experienced editorial board make it an indispensable resource for wealth management professionals." } },
+                { name: "FinTech Magazine", publisher: "BizClik", focus: "Digital banking, payments, AI, blockchain.", details: { contacts: "Not specified", geo: "Global with APAC focus and events", engagement: "Digital magazine, virtual events (e.g., FinTech LIVE Singapore).", influence: "A key platform for innovators in the APAC fintech ecosystem, with a focus on cutting-edge technologies and strategies." } },
+                { name: "APAC Outlook Magazine (FinTech)", publisher: "Outlook Publishing Ltd.", focus: "Fintech corporate stories, executive interviews.", details: { contacts: "Jack Salter (Head of Editorial)", geo: "Asia-Pacific", engagement: "Digital magazine and website.", influence: "Offers valuable strategic insights into the leadership and direction of the regional fintech landscape." } },
+                { name: "Asia-Pacific Banking & Finance (AB+F)", publisher: "Australian Financial Publications", focus: "Banking, finance, capital markets.", details: { contacts: "Andrew Stabback (Publisher)", geo: "Australia, with dedicated section on Asian markets", engagement: "Magazine and online platform.", influence: "Provides valuable insights into the broader APAC financial landscape, particularly the interplay with Australian markets." } },
+            ]
+        }
+    };
+
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const sections = document.querySelectorAll('.content-section');
+    const modalContainer = document.getElementById('modal-container');
+
+    function showSection(sectionId) {
+        sections.forEach(section => {
+            section.classList.toggle('active', section.id === sectionId);
+        });
+        navButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.section === sectionId);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showSection(btn.dataset.section);
+        });
+    });
+
+    let gdpChart;
+    function renderChart(country) {
+        const ctx = document.getElementById('gdpChart').getContext('2d');
+        const countryData = appData.gdp[country];
+        
+        if (gdpChart) {
+            gdpChart.destroy();
+        }
+
+        gdpChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: countryData.labels,
+                datasets: [{
+                    label: 'GDP Contribution',
+                    data: countryData.data,
+                    backgroundColor: countryData.colors,
+                    borderColor: '#f8fafc',
+                    borderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#475569', // slate-600
+                            font: {
+                                size: 14,
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + '%';
+                                }
+                                return label;
+                            }
+                        },
+                        backgroundColor: '#1e293b', // slate-800
+                        titleFont: { size: 16 },
+                        bodyFont: { size: 14 },
+                        padding: 12,
+                        cornerRadius: 6
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('country-selector').addEventListener('change', (e) => {
+        renderChart(e.target.value);
+    });
+    
+    function renderMethodology() {
+        const container = document.getElementById('methodology-grid');
+        container.innerHTML = appData.methodology.map(item => `
+            <div data-id="${item.id}" class="method-item cursor-pointer p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                <div class="text-4xl mb-2">${item.icon}</div>
+                <h3 class="font-semibold text-slate-800">${item.title}</h3>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.method-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const methdologyItem = appData.methodology.find(m => m.id === item.dataset.id);
+                showModal(methdologyItem.title, `<p class="text-slate-600">${methdologyItem.description}</p>`);
+            });
+        });
+    }
+    
+    function renderPublications() {
+        for (const industry in appData.publications) {
+            const container = document.getElementById(`publications-${industry}`);
+            if(container){
+                container.innerHTML = appData.publications[industry].map(pub => `
+                    <div class="card bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer p-6 flex flex-col justify-between" data-industry="${industry}" data-pubname="${pub.name}">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">${pub.name}</h3>
+                            <p class="text-sm text-slate-500 mb-2">${pub.publisher}</p>
+                            <p class="text-slate-700">${pub.focus}</p>
+                        </div>
+                        <button class="text-indigo-600 font-semibold text-left mt-4 self-start">View Details →</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                const industry = card.dataset.industry;
+                const pubName = card.dataset.pubname;
+                const pubData = appData.publications[industry].find(p => p.name === pubName);
+                const modalBody = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Key Contacts</h4>
+                            <p class="text-slate-600">${pubData.details.contacts}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Geographic Focus</h4>
+                            <p class="text-slate-600">${pubData.details.geo}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Digital Engagement</h4>
+                            <p class="text-slate-600">${pubData.details.engagement}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Influence & Authority</h4>
+                            <p class="text-slate-600">${pubData.details.influence}</p>
+                        </div>
+                    </div>
+                `;
+                showModal(pubData.name, modalBody);
+            });
+        });
+    }
+
+    function showModal(title, body) {
+        modalContainer.innerHTML = `
+            <div class="modal-backdrop">
+                <div class="modal-content bg-white w-11/12 max-w-2xl rounded-xl shadow-2xl p-6 relative">
+                    <button id="close-modal" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 text-2xl font-bold">&times;</button>
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">${title}</h3>
+                    ${body}
+                </div>
+            </div>
+        `;
+        modalContainer.classList.remove('hidden');
+        document.getElementById('close-modal').addEventListener('click', closeModal);
+        modalContainer.querySelector('.modal-backdrop').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeModal();
+            }
+        });
+    }
+
+    function closeModal() {
+        modalContainer.classList.add('hidden');
+        modalContainer.innerHTML = '';
+    }
+
+    // Initial load
+    showSection('overview');
+    renderChart('China');
+    renderMethodology();
+    renderPublications();
+});
+</script>
+
 </body>
 </html>
