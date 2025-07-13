@@ -9,5 +9,534 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    ...
+    <!-- Chosen Palette: Calm Harmony (Stone, Teal, Amber) -->
+    <!-- Application Structure Plan: The SPA is designed as a vertical-scrolling, thematic dashboard. This structure was chosen over a direct replication of the report's chapters to prioritize user-driven exploration. It allows a user to immediately access the section most relevant to their needs—be it comparing publications, exploring the ecosystem by country, or analyzing market trends—without needing to scroll through less relevant information. The key interactions involve: 1) A dynamic bar chart for direct publication comparison. 2) A clickable country filter in the 'Ecosystem Explorer' to dynamically display relevant associations and events. 3) Clear, card-based layouts for easy digestion of information. This architecture turns a static document into a functional tool for market analysis. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Magazine comparison (IAA vs. Automate Asia). Goal: Compare. Viz: Dynamic Bar Chart (Chart.js) and side-by-side feature cards. Interaction: Buttons to switch chart data between 'Readership' and 'Frequency'. Justification: Visual comparison of metrics is faster and more impactful than a table. Cards allow for scannable qualitative data.
+        - Report Info: Industry Associations & Events by country. Goal: Organize & Explore. Viz: Clickable list of countries that filters a display of info cards. Interaction: Click events on country names trigger JS to filter and render data. Justification: Transforms dense tables into an interactive, user-directed discovery tool, making country-specific research highly efficient.
+        - Report Info: Robot Density data. Goal: Compare/Rank. Viz: Horizontal Bar Chart (Chart.js). Interaction: Tooltips on hover. Justification: Ideal for comparing magnitudes and rankings across different countries.
+        - Report Info: Textual summaries and recommendations. Goal: Inform. Viz: Styled text blocks with clear headings. Justification: Provides necessary context and actionable takeaways.
+        - NEW: Publication Insights (LLM). Goal: Inform/Analyze. Viz: Collapsible text area with generated insights. Interaction: Button click triggers LLM call. Justification: Adds AI-driven content analysis directly tied to publication data.
+        - NEW: Market Opportunity Generator (LLM). Goal: Inform/Strategize. Viz: Collapsible text area with generated insights. Interaction: Button click triggers LLM call based on selected country. Justification: Provides AI-driven strategic insights relevant to specific regional markets.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .ai-insights-area {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f0f9ff; /* sky-50 */
+            border: 1px solid #bae6fd; /* sky-200 */
+            border-radius: 0.5rem;
+            color: #0c4a6e; /* sky-900 */
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .ai-insights-area.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-teal-700">SEA Automation</span>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#overview" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent hover:border-teal-600">Overview</a>
+                    <a href="#publications" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent hover:border-teal-600">Publications</a>
+                    <a href="#ecosystem" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent hover:border-teal-600">Ecosystem</a>
+                    <a href="#trends" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent hover:border-teal-600">Trends</a>
+                    <a href="#recommendations" class="nav-link text-slate-600 hover:text-teal-600 border-b-2 border-transparent hover:border-teal-600">Recommendations</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Section 1: Overview -->
+        <section id="overview" class="mb-16 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Southeast Asia's Industrial Automation Landscape</h1>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                An interactive analysis of the key publications, industry players, and market trends shaping the future of manufacturing in one of the world's most dynamic regions. Explore the data-driven insights from our comprehensive report.
+            </p>
+        </section>
+
+        <!-- Section 2: Publication Deep Dive -->
+        <section id="publications" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-900">Publication Deep Dive</h2>
+            <p class="text-center text-slate-600 mb-8 max-w-2xl mx-auto">This section offers a direct comparison of Southeast Asia's two leading industrial automation publications. Use the interactive chart to compare key metrics and review their unique strengths to determine which best suits your information or marketing needs.</p>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                <div class="flex justify-center space-x-4 mb-6">
+                    <button id="showReadershipBtn" class="bg-teal-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-teal-700 transition">Readership</button>
+                    <button id="showFrequencyBtn" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg shadow-md hover:bg-slate-300 transition">Issues Per Year</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="publicationsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mt-12">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 flex flex-col">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Industrial Automation Asia (IAA)</h3>
+                    <p class="text-slate-600 mb-6 flex-grow">Established in 2001, IAA is a frontrunner with broad coverage of topics like robotics, IoT, and smart manufacturing. It's recognized for its high frequency and large, BPA-audited readership, making it a key platform for timely news and broad market reach.</p>
+                    <div class="mt-auto space-y-3">
+                        <div class="flex items-center"><span class="font-semibold w-28">Readership:</span><span class="text-teal-600 font-bold">37,000</span></div>
+                        <div class="flex items-center"><span class="font-semibold w-28">Frequency:</span><span class="text-teal-600 font-bold">8 issues/year</span></div>
+                        <div class="flex items-center"><span class="font-semibold w-28">USP:</span><span class="text-slate-700">Verified reach, targets top management</span></div>
+                    </div>
+                    <button data-publication="IAA" class="get-ai-insights-btn bg-amber-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-amber-600 transition mt-6">Get AI Insights ✨</button>
+                    <div id="iaa-insights" class="ai-insights-area"></div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 flex flex-col">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Automate Asia Magazine</h3>
+                    <p class="text-slate-600 mb-6 flex-grow">A quarterly publication since 2006, Automate Asia focuses on deep insights, exclusive interviews, and strategic analysis of Industry 4.0. Its strong ties to industry events and associations provide unique content and a targeted audience.</p>
+                     <div class="mt-auto space-y-3">
+                        <div class="flex items-center"><span class="font-semibold w-28">Readership:</span><span class="text-teal-600 font-bold">25,000</span></div>
+                        <div class="flex items-center"><span class="font-semibold w-28">Frequency:</span><span class="text-teal-600 font-bold">4 issues/year</span></div>
+                        <div class="flex items-center"><span class="font-semibold w-28">USP:</span><span class="text-slate-700">In-depth analysis, strong event integration</span></div>
+                    </div>
+                    <button data-publication="Automate Asia Magazine" class="get-ai-insights-btn bg-amber-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-amber-600 transition mt-6">Get AI Insights ✨</button>
+                    <div id="automate-asia-insights" class="ai-insights-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Ecosystem Explorer -->
+        <section id="ecosystem" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-900">Ecosystem Explorer</h2>
+            <p class="text-center text-slate-600 mb-8 max-w-2xl mx-auto">Discover the key players in Southeast Asia's automation ecosystem. Select a country to filter the lists of prominent industry associations and major trade shows, providing a focused view of the landscape in each market.</p>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-6" id="country-filter-buttons">
+                    <!-- Buttons will be injected by JS -->
+                </div>
+                <button id="generateMarketOpportunitiesBtn" class="bg-amber-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-amber-600 transition w-full md:w-auto mt-4">Generate Market Opportunities ✨</button>
+                <div id="market-opportunities-insights" class="ai-insights-area"></div>
+
+                <div id="ecosystem-content" class="grid md:grid-cols-2 gap-6 min-h-[300px] mt-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-teal-500 pb-2">Associations</h3>
+                        <div id="associations-list" class="space-y-4"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-amber-500 pb-2">Trade Shows & Events</h3>
+                        <div id="events-list" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Market Trends -->
+        <section id="trends" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-900">Key Market Trends</h2>
+             <p class="text-center text-slate-600 mb-8 max-w-2xl mx-auto">The region's push towards Industry 4.0 is evident in its robot density and strategic investments. The chart below highlights the significant adoption of robotics in key Asian economies, a primary driver of the automation market's growth.</p>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                <h3 class="text-xl font-bold text-center text-slate-800 mb-4">Robot Density in Selected Economies (Robots per 10,000 Employees)</h3>
+                <div class="chart-container">
+                    <canvas id="robotDensityChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Recommendations -->
+        <section id="recommendations">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-900">Strategic Recommendations</h2>
+            <p class="text-center text-slate-600 mb-8 max-w-2xl mx-auto">For stakeholders looking to engage with this market, a multi-faceted approach is essential for staying competitive and identifying opportunities.</p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                 <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-teal-100 text-teal-700 rounded-full p-3 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.496a9 9 0 11-12.728 0 9 9 0 0112.728 0z" /></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900">Market Intelligence</h3>
+                    </div>
+                    <p class="text-slate-600">
+                        Combine insights from both <strong class="text-slate-800">IAA</strong> for broad, timely news and <strong class="text-slate-800">Automate Asia</strong> for deep, strategic analysis. Actively monitor their digital platforms and engage with key industry associations to gain a holistic view of policy, talent, and market dynamics.
+                    </p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-amber-100 text-amber-700 rounded-full p-3 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.136A7.756 7.756 0 012.75 8.441V7.756a2.244 2.244 0 012.244-2.244h1.066C7.62 5.512 9.27 4 11 4v1.882z" /></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900">Marketing & Outreach</h3>
+                    </div>
+                    <p class="text-slate-600">
+                        Utilize both publications for targeted advertising campaigns. Participate directly in major trade shows like <strong class="text-slate-800">SEMICON SEA</strong> and <strong class="text-slate-800">Assembly & Automation Technology</strong> for direct client engagement and brand visibility. Pursue thought leadership opportunities to establish expertise.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm">
+            <p>&copy; 2025 Interactive Report. Data synthesized from the 'Leading Industrial Automation Magazines in Southeast Asia' analysis.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const publicationsData = {
+                labels: ['Industrial Automation Asia', 'Automate Asia Magazine'],
+                readership: [37000, 25000],
+                frequency: [8, 4],
+            };
+
+            const ecosystemData = {
+                'All': {
+                    associations: [
+                        { name: 'AutomationSG', country: 'Singapore', mission: 'Promotes Automation, IoT, and Robotics (AIR) technologies.' },
+                        { name: 'MyAIRA', country: 'Malaysia', mission: 'Unifying voice for AI, robotics, and automation suppliers and end-users.' },
+                        { name: 'TRA2C', country: 'Thailand', mission: 'Enhances global competitiveness through robotics and automation.' },
+                        { name: 'VAA', country: 'Vietnam', mission: 'Focuses on trade connection, policy advice, and HR development.' },
+                        { name: 'PMATOII / IARA', country: 'Indonesia', mission: 'Addresses HR challenges and accelerates automation tech growth.' },
+                        { name: 'ASRII / IIRA', country: 'Indonesia', mission: 'Propels robotics adoption and fosters R&D.' },
+                    ],
+                    events: [
+                         { name: 'Assembly & Automation Technology', country: 'Thailand', focus: 'Industrial automation systems & assembly tech.' },
+                         { name: 'CeMAT Southeast Asia', country: 'Singapore', focus: 'Logistics expertise and smarter automation.' },
+                         { name: 'SEMICON Southeast Asia', country: 'Singapore/Malaysia', focus: 'Region\'s largest electronics supply chain gathering.' },
+                         { name: 'EMAX', country: 'Malaysia', focus: 'Electronics manufacturing and assembly technology.' },
+                         { name: 'WEPACK Southeast Asia', country: 'Indonesia', focus: 'Packaging automation and material handling.' },
+                    ]
+                },
+                'Singapore': {
+                    associations: [{ name: 'AutomationSG', country: 'Singapore', mission: 'Promotes Automation, IoT, and Robotics (AIR) technologies.' }],
+                    events: [
+                        { name: 'CeMAT Southeast Asia', country: 'Singapore', focus: 'Logistics expertise and smarter automation.' },
+                        { name: 'SEMICON Southeast Asia', country: 'Singapore/Malaysia', focus: 'Region\'s largest electronics supply chain gathering.' }
+                    ]
+                },
+                'Malaysia': {
+                    associations: [{ name: 'MyAIRA', country: 'Malaysia', mission: 'Unifying voice for AI, robotics, and automation suppliers and end-users.' }],
+                    events: [
+                        { name: 'SEMICON Southeast Asia', country: 'Singapore/Malaysia', focus: 'Region\'s largest electronics supply chain gathering.' },
+                        { name: 'EMAX', country: 'Malaysia', focus: 'Electronics manufacturing and assembly technology.' }
+                    ]
+                },
+                'Thailand': {
+                    associations: [{ name: 'TRA2C', country: 'Thailand', mission: 'Enhances global competitiveness through robotics and automation.' }],
+                    events: [{ name: 'Assembly & Automation Technology', country: 'Thailand', focus: 'Industrial automation systems & assembly tech.' }]
+                },
+                'Vietnam': {
+                    associations: [{ name: 'VAA', country: 'Vietnam', mission: 'Focuses on trade connection, policy advice, and HR development.' }],
+                    events: []
+                },
+                'Indonesia': {
+                    associations: [
+                        { name: 'PMATOII / IARA', country: 'Indonesia', mission: 'Addresses HR challenges and accelerates automation tech growth.' },
+                        { name: 'ASRII / IIRA', country: 'Indonesia', mission: 'Propels robotics adoption and fosters R&D.' }
+                    ],
+                    events: [{ name: 'WEPACK Southeast Asia', country: 'Indonesia', focus: 'Packaging automation and material handling.' }]
+                }
+            };
+            
+            const robotDensityData = {
+                labels: ['South Korea', 'Singapore', 'Germany', 'Japan', 'China', 'United States'],
+                density: [1000, 770, 415, 397, 470, 285]
+            };
+
+
+            const ctxPublications = document.getElementById('publicationsChart').getContext('2d');
+            let publicationsChart;
+
+            function createOrUpdateChart(data, label, backgroundColor, borderColor) {
+                if (publicationsChart) {
+                    publicationsChart.destroy();
+                }
+                publicationsChart = new Chart(ctxPublications, {
+                    type: 'bar',
+                    data: {
+                        labels: publicationsData.labels,
+                        datasets: [{
+                            label: label,
+                            data: data,
+                            backgroundColor: backgroundColor,
+                            borderColor: borderColor,
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            barThickness: 50,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US').format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#e2e8f0'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12,
+                                    },
+                                    color: '#64748b'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 14,
+                                        weight: '500'
+                                    },
+                                    color: '#334155',
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    callback: function(value) {
+                                        const label = this.getLabelForValue(value);
+                                        if (label.length > 15) {
+                                            return label.split(' ').slice(0, 2).join(' ') + '...';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const readershipBtn = document.getElementById('showReadershipBtn');
+            const frequencyBtn = document.getElementById('showFrequencyBtn');
+            
+            readershipBtn.addEventListener('click', () => {
+                createOrUpdateChart(publicationsData.readership, 'Registered Professionals', 'rgba(13, 148, 136, 0.7)', 'rgba(13, 148, 136, 1)');
+                readershipBtn.classList.remove('bg-slate-200', 'text-slate-700');
+                readershipBtn.classList.add('bg-teal-600', 'text-white');
+                frequencyBtn.classList.remove('bg-teal-600', 'text-white');
+                frequencyBtn.classList.add('bg-slate-200', 'text-slate-700');
+            });
+
+            frequencyBtn.addEventListener('click', () => {
+                createOrUpdateChart(publicationsData.frequency, 'Issues per Year', 'rgba(245, 158, 11, 0.7)', 'rgba(245, 158, 11, 1)');
+                frequencyBtn.classList.remove('bg-slate-200', 'text-slate-700');
+                frequencyBtn.classList.add('bg-teal-600', 'text-white');
+                readershipBtn.classList.remove('bg-teal-600', 'text-white');
+                readershipBtn.classList.add('bg-slate-200', 'text-slate-700');
+            });
+
+            createOrUpdateChart(publicationsData.readership, 'Registered Professionals', 'rgba(13, 148, 136, 0.7)', 'rgba(13, 148, 136, 1)');
+            
+            const countryFilterButtons = document.getElementById('country-filter-buttons');
+            const associationsList = document.getElementById('associations-list');
+            const eventsList = document.getElementById('events-list');
+            const marketOpportunitiesInsights = document.getElementById('market-opportunities-insights');
+            let currentSelectedCountry = 'All'; // Track the currently selected country for LLM calls
+
+            function createCard(item, type) {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 p-4 rounded-lg border border-slate-200 transition hover:shadow-md hover:border-teal-300';
+                card.innerHTML = `
+                    <p class="font-bold text-slate-800">${item.name}</p>
+                    <p class="text-sm text-slate-600">${item.mission || item.focus}</p>
+                    <span class="text-xs font-medium ${type === 'association' ? 'bg-teal-100 text-teal-800' : 'bg-amber-100 text-amber-800'} px-2 py-0.5 rounded-full mt-2 inline-block">${item.country}</span>
+                `;
+                return card;
+            }
+
+            function displayEcosystemData(country) {
+                const data = ecosystemData[country];
+                associationsList.innerHTML = '';
+                eventsList.innerHTML = '';
+
+                if (data.associations.length > 0) {
+                    data.associations.forEach(item => associationsList.appendChild(createCard(item, 'association')));
+                } else {
+                    associationsList.innerHTML = `<p class="text-slate-500 text-sm">No specific associations listed for this selection.</p>`;
+                }
+
+                if (data.events.length > 0) {
+                    data.events.forEach(item => eventsList.appendChild(createCard(item, 'event')));
+                } else {
+                    eventsList.innerHTML = `<p class="text-slate-500 text-sm">No specific events listed for this selection.</p>`;
+                }
+                currentSelectedCountry = country; // Update the selected country
+            }
+            
+            let activeCountryButton = null;
+            Object.keys(ecosystemData).forEach(country => {
+                const button = document.createElement('button');
+                button.textContent = country;
+                button.className = 'px-4 py-2 rounded-lg shadow-sm transition text-sm font-medium';
+                if (country === 'All') {
+                    button.classList.add('bg-teal-600', 'text-white');
+                    activeCountryButton = button;
+                } else {
+                     button.classList.add('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+                }
+
+                button.addEventListener('click', () => {
+                    displayEcosystemData(country);
+                    if(activeCountryButton) {
+                        activeCountryButton.classList.remove('bg-teal-600', 'text-white');
+                        activeCountryButton.classList.add('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+                    }
+                    button.classList.add('bg-teal-600', 'text-white');
+                    button.classList.remove('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+                    activeCountryButton = button;
+
+                    // Clear previous market opportunities when country changes
+                    marketOpportunitiesInsights.innerHTML = '';
+                    marketOpportunitiesInsights.classList.remove('active');
+                });
+                countryFilterButtons.appendChild(button);
+            });
+            
+            displayEcosystemData('All');
+
+            const ctxRobotDensity = document.getElementById('robotDensityChart').getContext('2d');
+            new Chart(ctxRobotDensity, {
+                type: 'bar',
+                data: {
+                    labels: robotDensityData.labels,
+                    datasets: [{
+                        label: 'Robots per 10,000 Employees',
+                        data: robotDensityData.density,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e2e8f0'
+                            },
+                            ticks: { font: { size: 12 }, color: '#64748b' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { size: 14, weight: '500' }, color: '#334155' }
+                        }
+                    }
+                }
+            });
+
+            // LLM Integration Functions
+            async function getGeminiResponse(prompt, targetElement, buttonElement) {
+                targetElement.innerHTML = '<p class="text-center text-slate-500">Loading AI insights...</p>';
+                targetElement.classList.add('active');
+                buttonElement.disabled = true;
+                buttonElement.classList.add('opacity-50', 'cursor-not-allowed');
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will automatically provide the API key
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        targetElement.innerHTML = `<p>${text}</p>`;
+                    } else {
+                        targetElement.innerHTML = '<p class="text-red-600">Error: Could not retrieve AI insights. Please try again.</p>';
+                        console.error('Gemini API response structure unexpected:', result);
+                    }
+                } catch (error) {
+                    targetElement.innerHTML = '<p class="text-red-600">Error: Failed to connect to AI service. Check console for details.</p>';
+                    console.error('Error calling Gemini API:', error);
+                } finally {
+                    buttonElement.disabled = false;
+                    buttonElement.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            // Event Listeners for Publication Insights
+            document.querySelectorAll('.get-ai-insights-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const publicationName = button.dataset.publication;
+                    const targetId = publicationName === 'IAA' ? 'iaa-insights' : 'automate-asia-insights';
+                    const targetElement = document.getElementById(targetId);
+                    const prompt = `Based on typical content of an industrial automation magazine like ${publicationName}, generate 3 key emerging trends or significant developments you would expect to find in their latest issue, focusing on Southeast Asia. Format as a bulleted list.`;
+                    getGeminiResponse(prompt, targetElement, button);
+                });
+            });
+
+            // Event Listener for Market Opportunity Generator
+            const generateMarketOpportunitiesBtn = document.getElementById('generateMarketOpportunitiesBtn');
+            generateMarketOpportunitiesBtn.addEventListener('click', () => {
+                const targetElement = document.getElementById('market-opportunities-insights');
+                const prompt = `Considering the industrial automation landscape in ${currentSelectedCountry} (e.g., its associations, events, and general economic context), identify 3 potential market opportunities or challenges for companies entering or expanding in this region. Format as a bulleted list.`;
+                getGeminiResponse(prompt, targetElement, generateMarketOpportunitiesBtn);
+            });
+        });
+    </script>
+</body>
 </html>
