@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Automation: Media Landscape & Strategic Trends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Calm Harmony" - A palette grounded in warm neutrals (#F8F7F4, #FFFFFF) for the background, a professional dark blue for text (#172554), a complementary slate for secondary elements (#475569), and a clear, modern blue (#3B82F6) as a subtle accent for interactive elements and data visualization. -->
+    <!-- Application Structure Plan: The SPA is designed with a non-linear, thematic dashboard approach to prioritize user exploration over the report's original linear structure. A sticky top navigation allows users to jump to key sections: 1) A 'Global Landscape' section with interactive tabs for regions, revealing publication details in a clean card format. 2) A 'Core Themes' section using a grid layout to present the main industry narratives (Digital Transformation, Robotics, etc.), each with a summary and a simple visualization. 3) A 'Market Pulse' dashboard with prominent KPI cards and a primary growth chart to make quantitative data easily digestible. 4) A 'Strategic Implications' section with an accordion UI to present actionable recommendations cleanly. This structure was chosen to break down the dense report into manageable, interactive modules, allowing users to explore topics based on their interests and facilitating a quicker understanding of the key insights. -->
+    <!-- Visualization & Content Choices: 1. Report Info: Regional Media Landscape -> Goal: Organize/Compare -> Viz: Interactive Tabs & Cards -> Interaction: Click tabs to filter regions, view details on cards -> Justification: More engaging and less overwhelming than a large table. Method: HTML/CSS/JS. 2. Report Info: Market Growth Projections -> Goal: Show Change -> Viz: Line Chart -> Interaction: Hover for tooltips with specific values -> Justification: Clearly visualizes the growth trajectory over time. Library: Chart.js. 3. Report Info: ROI/Productivity Stats -> Goal: Inform/Highlight -> Viz: KPI Cards -> Interaction: Static display -> Justification: Makes key numbers stand out for immediate impact. Method: HTML/Tailwind. 4. Report Info: Core Themes (e.g., Digital Transformation) -> Goal: Inform/Compare -> Viz: Horizontal Bar Chart + Text -> Interaction: Hover on bars -> Justification: Shows the relative media focus on sub-topics within a theme. Library: Chart.js. 5. Report Info: Strategic Recommendations -> Goal: Organize -> Viz: Accordion -> Interaction: Click to expand/collapse -> Justification: Presents dense information in a clean, user-controlled manner. Method: HTML/JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F7F4; color: #1e293b; }
+        .nav-link { transition: color 0.3s, border-bottom-color 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #3B82F6; border-bottom-color: #3B82F6; }
+        .kpi-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .tab-btn.active { background-color: #3B82F6; color: white; }
+        .tab-btn { transition: background-color 0.3s, color 0.3s; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .accordion-button.open .accordion-arrow { transform: rotate(180deg); }
+        .accordion-arrow { transition: transform 0.3s; }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800">Industrial Automation Insights</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#landscape" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Landscape</a>
+                <a href="#themes" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Core Themes</a>
+                <a href="#market" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Market Pulse</a>
+                <a href="#strategy" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Strategy</a>
+            </div>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-white border border-slate-300 rounded-md p-2 text-slate-700">
+                    <option value="#landscape">Landscape</option>
+                    <option value="#themes">Core Themes</option>
+                    <option value="#market">Market Pulse</option>
+                    <option value="#strategy">Strategy</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+        <section id="hero" class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4">The Industrial Automation Media Landscape</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                An interactive distillation of key trends, market dynamics, and strategic implications from leading trade publications. Discover the core narratives shaping the future of automation.
+            </p>
+        </section>
+
+        <section id="landscape" class="mb-16 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-800 mb-2">Global Media Landscape</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto">Explore the key trade publications shaping industrial automation discourse across the globe. Select a region to view its most influential media outlets and their specific editorial focus.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div id="tabs-container" class="flex flex-wrap justify-center gap-2 mb-8">
+                    <button class="tab-btn px-4 py-2 font-semibold text-sm rounded-full bg-slate-200 text-slate-700" data-region="north-america">North America</button>
+                    <button class="tab-btn px-4 py-2 font-semibold text-sm rounded-full bg-slate-200 text-slate-700" data-region="europe">Europe</button>
+                    <button class="tab-btn px-4 py-2 font-semibold text-sm rounded-full bg-slate-200 text-slate-700" data-region="asia">Asia</button>
+                    <button class="tab-btn px-4 py-2 font-semibold text-sm rounded-full bg-slate-200 text-slate-700" data-region="global">Global/Cross-Regional</button>
+                </div>
+                <div id="publications-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </div>
+        </section>
+
+        <section id="themes" class="mb-16 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-800 mb-2">Core Industry Themes</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto">The media narrative is dominated by several key themes that signal the industry's priorities. This section breaks down the most prominent topics and their significance.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="text-xl font-bold text-slate-800 mb-3">Digital Transformation & Industry 4.0</h4>
+                    <p class="text-slate-600 mb-4 text-sm">This is the central pillar of modern industrial discourse, focusing on practical integration of AI, IIoT, and Digital Twins to drive tangible ROI. The conversation has matured from 'if' to 'how'.</p>
+                    <button class="generate-insight-btn bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full text-sm mb-4 transition-colors" data-theme="Digital Transformation & Industry 4.0">
+                        ✨ Generate Deeper Insight
+                    </button>
+                    <div class="insight-output text-slate-700 text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 hidden">
+                        <p class="font-semibold mb-1 text-blue-800">✨ AI-Powered Insight:</p>
+                        <p class="insight-text"></p>
+                    </div>
+                    <div class="loading-indicator text-slate-500 text-xs mt-2 hidden">Generating...</div>
+                    <div class="h-48"><canvas id="digitalTransformationChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="text-xl font-bold text-slate-800 mb-3">Robotics & Advanced Automation</h4>
+                    <p class="text-slate-600 mb-4 text-sm">Coverage shows a maturing market moving towards optimizing robot integration, maintenance, and human-robot collaboration, particularly with the rise of cobots to address labor challenges.</p>
+                    <button class="generate-insight-btn bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full text-sm mb-4 transition-colors" data-theme="Robotics & Advanced Automation">
+                        ✨ Generate Deeper Insight
+                    </button>
+                    <div class="insight-output text-slate-700 text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 hidden">
+                        <p class="font-semibold mb-1 text-blue-800">✨ AI-Powered Insight:</p>
+                        <p class="insight-text"></p>
+                    </div>
+                    <div class="loading-indicator text-slate-500 text-xs mt-2 hidden">Generating...</div>
+                     <div class="h-48"><canvas id="roboticsChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="text-xl font-bold text-slate-800 mb-3">Industrial Cybersecurity</h4>
+                    <p class="text-slate-600 mb-4 text-sm">Cybersecurity is framed as a non-negotiable foundation for digital transformation. The focus is on advanced, proactive strategies like Zero Trust for OT environments to ensure operational resilience.</p>
+                    <button class="generate-insight-btn bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full text-sm mb-4 transition-colors" data-theme="Industrial Cybersecurity">
+                        ✨ Generate Deeper Insight
+                    </button>
+                    <div class="insight-output text-slate-700 text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 hidden">
+                        <p class="font-semibold mb-1 text-blue-800">✨ AI-Powered Insight:</p>
+                        <p class="insight-text"></p>
+                    </div>
+                    <div class="loading-indicator text-slate-500 text-xs mt-2 hidden">Generating...</div>
+                    <div class="h-48"><canvas id="cybersecurityChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="text-xl font-bold text-slate-800 mb-3">Sustainability & ESG</h4>
+                    <p class="text-slate-600 mb-4 text-sm">A rapidly growing theme where automation is positioned as a key enabler for achieving environmental goals, resource optimization, and aligning business objectives with corporate responsibility.</p>
+                    <button class="generate-insight-btn bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full text-sm mb-4 transition-colors" data-theme="Sustainability & ESG">
+                        ✨ Generate Deeper Insight
+                    </button>
+                    <div class="insight-output text-slate-700 text-sm bg-blue-50 p-3 rounded-lg border border-blue-200 hidden">
+                        <p class="font-semibold mb-1 text-blue-800">✨ AI-Powered Insight:</p>
+                        <p class="insight-text"></p>
+                    </div>
+                    <div class="loading-indicator text-slate-500 text-xs mt-2 hidden">Generating...</div>
+                     <div class="h-48"><canvas id="sustainabilityChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="market" class="mb-16 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-800 mb-2">Market Pulse: Growth & ROI</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto">Quantitative data from the report highlights a robust market with significant growth projections, driven by the clear and measurable returns on automation investments.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="kpi-card bg-white p-6 rounded-xl shadow-lg text-center">
+                    <p class="text-4xl font-extrabold text-blue-600">10.8%</p>
+                    <p class="text-slate-600 font-medium mt-2">Projected CAGR (2025-2030)</p>
+                </div>
+                <div class="kpi-card bg-white p-6 rounded-xl shadow-lg text-center">
+                    <p class="text-4xl font-extrabold text-blue-600">22%</p>
+                    <p class="text-slate-600 font-medium mt-2">Average Reduction in Operating Costs</p>
+                </div>
+                <div class="kpi-card bg-white p-6 rounded-xl shadow-lg text-center">
+                    <p class="text-4xl font-extrabold text-blue-600">&gt;90%</p>
+                    <p class="text-slate-600 font-medium mt-2">of Workers Report Increased Productivity</p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h4 class="text-xl font-bold text-slate-800 mb-4 text-center">Global Industrial Automation & Control Systems Market Growth</h4>
+                <div class="chart-container">
+                    <canvas id="marketGrowthChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-slate-800 mb-2">Strategic Implications</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto">The media landscape analysis reveals key strategic recommendations for businesses to thrive. Expand the sections below to explore actionable insights for content, market positioning, and R&amp;D.</p>
+            </div>
+            <div id="accordion-container" class="space-y-4 max-w-4xl mx-auto">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 mt-16">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Interactive Report generated based on "The Industrial Automation Media Landscape: Key Observations and Strategic Trends".</p>
+            <p class="text-sm mt-2">This is a synthesized, interactive representation and not the original source document.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const publicationsData = {
+                'north-america': [
+                    { name: 'Automation.com Monthly', focus: 'High-quality technical content from ISA experts, focusing on IIoT, control trends, and OT cybersecurity.', audience: 'Engineers, technicians, managers, IT professionals.' },
+                    { name: 'Automation World', focus: 'Comprehensive coverage of the entire automation spectrum, from software to hardware, across discrete and batch processing.', audience: 'Professionals in manufacturing and processing.' },
+                    { name: 'Control Design', focus: 'Specialized resource for industrial machine builders (OEMs), focusing on controls and automation application.', audience: 'OEMs, system integrators, engineering firms.' },
+                    { name: 'Control Engineering', focus: 'Deeply technical resource for automation engineers covering design, implementation, and management of control systems.', audience: 'Global industrial engineering audience.' },
+                    { name: 'Manufacturing Today', focus: 'Broad manufacturing topics beyond core automation, including business challenges, supply chains, and specific industry news.', audience: 'Manufacturing executives and decision-makers.' },
+                    { name: 'North America Outlook', focus: 'Corporate stories, industry spotlights, and high-level interviews with C-suite leaders on business strategy and growth.', audience: 'C-suite leaders, key decision-makers.' },
+                ],
+                'europe': [
+                    { name: 'A&amp;D - Automation &amp; Digitalisierung', focus: 'Leading magazine for German-speaking markets, focused on transferring expertise from suppliers to users for practical deployment.', audience: 'Companies in German-speaking manufacturing.' },
+                    { name: 'Manufacturing Digital Magazine', focus: 'Connects leading manufacturing executives globally, covering strategic topics like digital transformation, ESG, and Factory of the Future.', audience: 'Global C-suite manufacturing executives.' },
+                ],
+                'asia': [
+                    { name: 'Industrial Automation Asia (IAA)', focus: 'Region\'s first BPA audited publication, covering latest trends with a strong focus on smart manufacturing, sustainability, and green tech.', audience: 'Top-level management, purchasers.' },
+                    { name: 'Automate Asia Magazine', focus: 'Focuses on robotics and automation in Southeast Asia, highlighting national-level investments and strategic priorities in AI and robotics.', audience: 'Those interested in SEA automation.' },
+                ],
+                'global': [
+                    { name: 'Smart Industry', focus: 'A "living library" for the digitalization of manufacturing (Industry 4.0), with a heavy emphasis on IT/OT convergence and cybersecurity.', audience: 'Professional decision-makers (IT & OT).' },
+                    { name: 'Industrial Equipment News (IEN)', focus: 'A long-standing source for news and information on industrial products, components, and equipment.', audience: 'Professionals seeking practical product info.' },
+                ]
+            };
+
+            const strategicData = [
+                {
+                    title: 'Content Strategy',
+                    points: [
+                        'Embrace AI and Digital Transformation narratives with a focus on practical ROI.',
+                        'Prioritize cybersecurity messaging as a core value proposition.',
+                        'Champion human-centric automation that empowers the workforce.',
+                        'Highlight sustainability impact with data-driven environmental benefits.',
+                        'Tailor regional messaging to local priorities (e.g., cobots in NA, green tech in Asia).'
+                    ]
+                },
+                {
+                    title: 'Market Positioning',
+                    points: [
+                        'Position as a strategic digital transformation partner, not just a component supplier.',
+                        'Showcase interoperability and seamless integration with existing enterprise systems (MES, ERP).',
+                        'Invest in thought leadership by contributing to key trade publications and events.'
+                    ]
+                },
+                {
+                    title: 'R&amp;D Alignment',
+                    points: [
+                        'Focus on embedding advanced AI and robust cybersecurity directly into product design.',
+                        'Develop sustainable solutions that reduce energy consumption and support a circular economy.',
+                        'Enhance human-machine collaboration with intuitive and safe interfaces.'
+                    ]
+                }
+            ];
+
+            const tabsContainer = document.getElementById('tabs-container');
+            const publicationsGrid = document.getElementById('publications-grid');
+            const accordionContainer = document.getElementById('accordion-container');
+            const mobileNav = document.getElementById('mobile-nav');
+
+            function renderPublications(region) {
+                publicationsGrid.innerHTML = '';
+                const data = publicationsData[region] || [];
+                data.forEach(pub => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-50 p-6 rounded-lg border border-slate-200';
+                    card.innerHTML = `
+                        <h5 class="font-bold text-lg text-slate-800 mb-2">${pub.name}</h5>
+                        <p class="text-sm text-slate-600 mb-3"><span class="font-semibold">Focus:</span> ${pub.focus}</p>
+                        <p class="text-sm text-slate-500"><span class="font-semibold">Audience:</span> ${pub.audience}</p>
+                    `;
+                    publicationsGrid.appendChild(card);
+                });
+            }
+
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-btn')) {
+                    tabsContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const region = e.target.dataset.region;
+                    renderPublications(region);
+                }
+            });
+
+            function renderAccordions() {
+                strategicData.forEach(item => {
+                    const accordionItem = document.createElement('div');
+                    accordionItem.className = 'bg-white rounded-xl shadow-lg overflow-hidden';
+                    accordionItem.innerHTML = `
+                        <button class="accordion-button w-full flex justify-between items-center p-6 text-left">
+                            <span class="text-lg font-semibold text-slate-800">${item.title}</span>
+                            <span class="accordion-arrow text-blue-600 text-2xl">&#x25BC;</span>
+                        </button>
+                        <div class="accordion-content px-6 pb-6">
+                            <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                ${item.points.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    accordionContainer.appendChild(accordionItem);
+                });
+
+                document.querySelectorAll('.accordion-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.nextElementSibling;
+                        button.classList.toggle('open');
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null;
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    });
+                });
+            }
+
+            tabsContainer.querySelector('.tab-btn').click();
+            renderAccordions();
+
+            const chartOptions = (title) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: false, text: title },
+                     tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#f8fafc',
+                        boxPadding: 4,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    label += context.parsed.x + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#334155', font: { weight: '500' } }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('digitalTransformationChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['AI/ML', 'IIoT', 'Digital Twins', 'Smart Mfg.'],
+                    datasets: [{
+                        label: 'Media Focus',
+                        data: [45, 30, 15, 10],
+                        backgroundColor: ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'],
+                        borderRadius: 4,
+                    }]
+                },
+                options: chartOptions('Digital Transformation Focus')
+            });
+
+            new Chart(document.getElementById('roboticsChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Cobots', 'Tooling', 'Diagnostics', 'Integration'],
+                    datasets: [{
+                        label: 'Media Focus',
+                        data: [40, 25, 20, 15],
+                        backgroundColor: ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'],
+                        borderRadius: 4,
+                    }]
+                },
+                options: chartOptions('Robotics Focus')
+            });
+
+            new Chart(document.getElementById('cybersecurityChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Zero Trust', 'OT Security', 'Risk Mgmt', 'Safety/Sec Fusion'],
+                    datasets: [{
+                        label: 'Media Focus',
+                        data: [35, 30, 20, 15],
+                        backgroundColor: ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'],
+                        borderRadius: 4,
+                    }]
+                },
+                options: chartOptions('Cybersecurity Focus')
+            });
+
+            new Chart(document.getElementById('sustainabilityChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Energy Efficiency', 'ESG Reporting', 'Green Mfg.', 'Circular Econ.'],
+                    datasets: [{
+                        label: 'Media Focus',
+                        data: [40, 25, 20, 15],
+                        backgroundColor: ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'],
+                        borderRadius: 4,
+                    }]
+                },
+                options: chartOptions('Sustainability Focus')
+            });
+
+            new Chart(document.getElementById('marketGrowthChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2024', '2025', '2030'],
+                    datasets: [{
+                        label: 'Market Value ($B)',
+                        data: [206.3, 226.8, 379],
+                        fill: true,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.1,
+                        pointBackgroundColor: '#3B82F6',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f8fafc',
+                            boxPadding: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Market Value: $${context.parsed.y} Billion`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#e2e8f0' },
+                            ticks: {
+                                color: '#475569',
+                                callback: function(value) {
+                                    return '$' + value + 'B';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#475569' }
+                        }
+                    }
+                }
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 150) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            mobileNav.addEventListener('change', (e) => {
+                window.location.href = e.target.value;
+            });
+
+            // LLM Integration Logic
+            document.querySelectorAll('.generate-insight-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const theme = e.target.dataset.theme;
+                    const parentDiv = e.target.closest('.bg-white');
+                    const insightOutputDiv = parentDiv.querySelector('.insight-output');
+                    const insightTextP = parentDiv.querySelector('.insight-text');
+                    const loadingIndicator = parentDiv.querySelector('.loading-indicator');
+
+                    insightOutputDiv.classList.add('hidden');
+                    insightTextP.textContent = '';
+                    loadingIndicator.classList.remove('hidden');
+
+                    const prompt = `Provide a brief, advanced insight (2-3 sentences) into the future trends or deeper implications of "${theme}" in industrial automation, focusing on practical integration and ROI, as if from an expert analyst.`;
+
+                    try {
+                        let chatHistory = [];
+                        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                        const payload = { contents: chatHistory };
+                        const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            insightTextP.textContent = text;
+                            insightOutputDiv.classList.remove('hidden');
+                        } else {
+                            insightTextP.textContent = 'Error: Could not generate insight. Please try again.';
+                            insightOutputDiv.classList.remove('hidden');
+                        }
+                    } catch (error) {
+                        insightTextP.textContent = 'Error: Failed to connect to AI service. Please check your network connection.';
+                        insightOutputDiv.classList.remove('hidden');
+                        console.error('Gemini API call failed:', error);
+                    } finally {
+                        loadingIndicator.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
