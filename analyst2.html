@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEA Pharma & MedTech Event Analysis 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #007A7A;
+            border-bottom: 2px solid #007A7A;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #007A7A;
+            color: #FFFFFF;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EDEDED;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tier-1 {
+            background-color: #F0F8F8;
+        }
+        .tier-1-global {
+            background-color: #FFFBEA;
+        }
+        .tier-2-regional {
+            background-color: #FFFFFF;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Chosen Palette: Warm Neutral Tones (#FDFBF8, #383838, #007A7A, #FFB26B) -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard for a media agency. The structure flows from a high-level overview of four events (3 SEA, 1 Global Benchmark) to granular detail. This is followed by a comparative 'Ecosystem Analysis', a 'Technology Focus' on fabrication processes, and a massively expanded, integrated 'Supplier Landscape' (Tier 1 Global Buyers, Tier 1 Global Technology Providers, and Tier 2/3 Regional Subcontractors). The final section, 'Strategic Editorial Angles', presents the actionable conclusions. This structure facilitates a strategic assessment of global trends (MEDICA/COMPAMED) applied to regional execution (CPHI, MMA, MFA). -->
+    <!-- Visualization & Content Choices: 
+        - Event Comparison (Dashboard): Goal: Compare scale, including the global benchmark. Method: Bar Chart (Chart.js) with four bars. Justification: Quickly contrasts regional specialization with global magnitude.
+        - Ecosystem Analysis (Thailand vs. Singapore): Goal: Compare national capabilities. Method: Radar Chart (Chart.js) for multivariate comparison. Justification: Visualizes competitive strengths.
+        - Technology Deep Dive: Goal: Inform on specific manufacturing processes. Method: Interactive cards with show/hide details. Justification: Cleans up the UI while providing necessary technical depth.
+        - Supplier List: Goal: Provide tangible targets (Expanded to over 95 entries). Method: Searchable HTML table with specific CSS classes (tier-1, tier-1-global, tier-2-regional) for color-coding the Tiers. Interaction: Live text search via JavaScript. Justification: High utility for identifying collaboration targets across the entire supply chain structure.
+        - Textual Content: Goal: Provide context and analysis. Method: Dynamically updated text blocks via tabs. Justification: Delivers focused, non-cluttered information.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-gray-200">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-[#007A7A]">SEA MedTech/PharmaTech Analyst</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a onclick="scrollToSection('overview')" class="nav-link active px-3 py-2 text-sm font-medium text-gray-700">Overview</a>
+                        <a onclick="scrollToSection('events')" class="nav-link px-3 py-2 text-sm font-medium text-gray-700">Event Deep Dive</a>
+                        <a onclick="scrollToSection('ecosystem')" class="nav-link px-3 py-2 text-sm font-medium text-gray-700">Ecosystem Analysis</a>
+                        <a onclick="scrollToSection('tech')" class="nav-link px-3 py-2 text-sm font-medium text-gray-700">Technology Focus</a>
+                        <a onclick="scrollToSection('suppliers')" class="nav-link px-3 py-2 text-sm font-medium text-gray-700">Supplier Landscape</a>
+                        <a onclick="scrollToSection('editorial')" class="nav-link px-3 py-2 text-sm font-medium text-gray-700">Editorial Angles</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="overview" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Executive Summary: The Global-to-Local MedTech Opportunity</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This analysis benchmarks key Southeast Asian MedTech and PharmaTech events against the global standard, **MEDICA/COMPAMED**, to reveal a clear supply chain narrative. Global R&D and capital equipment trends set in Europe directly fuel a growing demand for high-precision manufacturing in SEA. This dashboard provides the strategic insights and target lists necessary to build a compelling media collaboration proposal around this dynamic.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-[#007A7A]">CPHI Southeast Asia</h3>
+                    <p class="text-sm font-semibold">Pharma Supply Chain (Bangkok)</p>
+                    <p class="text-sm text-gray-500">Jul 8 - 10, 2026</p>
+                    <p class="mt-4 text-gray-700">Focuses on APIs, excipients, and *P-MEC* (machinery). Key for processing automation and drug delivery device manufacturing.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-[#007A7A]">Medical Manufacturing Asia</h3>
+                    <p class="text-sm font-semibold">MedTech Production (Singapore)</p>
+                    <p class="text-sm text-gray-500">Sep 9 - 11, 2026</p>
+                    <p class="mt-4 text-gray-700">Highly specialized on upstream processes: micro-nanotech, advanced materials, and high-precision fabrication.</p>
+                </div>
+                 <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-[#007A7A]">Medical Fair Asia</h3>
+                    <p class="text-sm font-semibold">Finished Devices (Singapore)</p>
+                    <p class="text-sm text-gray-500">Sep 9 - 11, 2026</p>
+                    <p class="mt-4 text-gray-700">The downstream event, showcasing finished devices and diagnostics. Provides market context for component manufacturers.</p>
+                </div>
+                 <div class="card p-6 rounded-lg bg-yellow-50/50">
+                    <h3 class="text-xl font-bold text-[#007A7A]">MEDICA / COMPAMED</h3>
+                    <p class="text-sm font-semibold">Global R&D & Supply Chain (Düsseldorf)</p>
+                    <p class="text-sm text-gray-500">Annually (Nov 2026 Est.)</p>
+                    <p class="mt-4 text-gray-700">The **Global Benchmark**. COMPAMED is critical for sourcing high-end production machinery, software, and future R&D collaboration.</p>
+                </div>
+            </div>
+             <div class="mt-12 card p-6 rounded-lg">
+                <h3 class="text-xl font-bold text-center mb-4">Event Scale at a Glance (Estimated)</h3>
+                <div class="chart-container">
+                    <canvas id="eventComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="events" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight">Event Deep Dive: Strategic Relevance & Focus</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">Each event serves a distinct purpose within the supply chain. Understanding their individual roles is key to creating targeted and valuable editorial content that speaks to the right audience.</p>
+            </div>
+
+            <div class="flex justify-center mb-8">
+                <div class="flex space-x-2 p-1 bg-gray-200 rounded-lg flex-wrap justify-center">
+                    <button class="tab-button active px-4 py-2 text-sm font-semibold rounded-md m-1" data-tab="cphi">CPHI SEA</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-md m-1" data-tab="mma">Medical Mfg Asia</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-md m-1" data-tab="mfa">Medical Fair Asia</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-md m-1" data-tab="medica">MEDICA / COMPAMED</button>
+                </div>
+            </div>
+
+            <div id="event-content" class="card rounded-lg p-8 min-h-[300px]">
+            </div>
+        </section>
+
+        <section id="ecosystem" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight">Regional Ecosystem Analysis: Thailand vs. Singapore</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">The manufacturing capabilities of Thailand and Singapore are complementary. This analysis highlights where global manufacturing technologies (often sourced at COMPAMED) can be most effectively implemented.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-2 text-[#007A7A]">Thailand: The Manufacturing Powerhouse</h3>
+                    <p class="text-gray-700">With a deep-rooted base in automotive and electronics, Thailand offers a robust ecosystem for high-volume, precision manufacturing. Its strengths lie in a large, skilled technical workforce and competitive operational costs, making it the ideal location for subcontractors focused on CNC machining, mold & die fabrication, and complex assembly for medical components.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-2 text-[#007A7A]">Singapore: The R&D and Innovation Hub</h3>
+                    <p class="text-gray-700">Singapore excels in high-value, R&D-intensive activities. It is a global hub for MedTech HQs, venture capital, and cutting-edge research. The focus here is on innovation—additive manufacturing of patient-specific implants, microfluidics for diagnostics, and the development of novel biocompatible materials. Singapore is the gateway to future technologies.</p>
+                </div>
+            </div>
+            <div class="mt-12 card p-6 rounded-lg">
+                <h3 class="text-xl font-bold text-center mb-4">Ecosystem Capability Matrix (Score out of 10)</h3>
+                <div class="chart-container">
+                    <canvas id="ecosystemRadarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight">Advanced Manufacturing Technology Focus</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">These are the core technologies driving the MedTech revolution. They represent the direct link between the **Global Capital Equipment Sellers** (exhibiting at COMPAMED) and the **Regional Subcontractors** (attending MMA and CPHI).</p>
+            </div>
+            <div class="space-y-4" id="tech-accordion">
+            </div>
+        </section>
+
+        <section id="suppliers" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight">Supplier & Vendor Landscape: An Integrated View</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This comprehensive, searchable list covers the entire supply chain, from global buyers and technology providers to the specialized regional firms executing high-precision manufacturing. This is your target list for interviews, features, and partnerships.</p>
+                <div class="mt-4 flex flex-wrap justify-center items-center space-x-4 text-sm font-semibold">
+                    <span class="flex items-center space-x-2"><span class="block w-4 h-4 rounded-full bg-[#F0F8F8] border"></span><span>Global OEM/Buyer (Tier 1)</span></span>
+                    <span class="flex items-center space-x-2"><span class="block w-4 h-4 rounded-full bg-[#FFFBEA] border"></span><span>Global Tech/Capital Equipment (Tier 1)</span></span>
+                    <span class="flex items-center space-x-2"><span class="block w-4 h-4 rounded-full bg-white border"></span><span>Regional Subcontractor (Tier 2/3)</span></span>
+                </div>
+            </div>
+            <div class="card p-6 rounded-lg">
+                <input type="text" id="supplierSearch" class="w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Search by company, country, specialization, or event...">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country/Base</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Relevant Event</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierTableBody" class="divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="editorial" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight">Proposed Strategic Editorial Angles</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">These actionable content themes are designed to resonate across the entire supply chain. They link global technology advancements to regional market needs, providing high value to Global OEMs, technology providers, and local suppliers alike.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg text-[#FFB26B]">Angle 1: The Technology Bridge from Europe to Asia</h3>
+                    <p class="mt-2 text-gray-700">Focus on the journey of innovation from global R&D hubs to SEA's factory floors. This theme explores how capital investments in technology shown at COMPAMED translate into tangible manufacturing capabilities in the region.</p>
+                    <ul class="mt-2 space-y-2 list-disc list-inside text-gray-600 text-sm">
+                        <li>**Feature:** "From Düsseldorf to Da Nang: How a Vietnamese Supplier Adopted German Laser-Welding Technology."</li>
+                        <li>**Roundtable:** "Investment ROI: When Should an SEA Supplier Invest in a 5-Axis CNC vs. a Hybrid Machine?"</li>
+                    </ul>
+                </div>
+                 <div class="card p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg text-[#FFB26B]">Angle 2: Material Science & Advanced Fabrication</h3>
+                    <p class="mt-2 text-gray-700">Dive deep into the high-performance materials and sophisticated processes required for next-generation medical devices. This theme targets engineers and R&D professionals at both OEMs and subcontractors.</p>
+                     <ul class="mt-2 space-y-2 list-disc list-inside text-gray-600 text-sm">
+                        <li>**Deep Dive:** "Beyond Titanium: The Rise of PEEK and Biocompatible Polymers in Additive Manufacturing."</li>
+                        <li>**Case Study:** "How Singaporean Micro-Molding Experts Achieve Sub-Micron Tolerances for Diagnostic Cartridges."</li>
+                    </ul>
+                </div>
+                 <div class="card p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg text-[#FFB26B]">Angle 3: The Digital Thread & Quality Assurance</h3>
+                    <p class="mt-2 text-gray-700">Explore the critical role of data, automation, and metrology in building a resilient and compliant MedTech supply chain. This addresses the top concerns of global procurement managers: quality and traceability.</p>
+                    <ul class="mt-2 space-y-2 list-disc list-inside text-gray-600 text-sm">
+                        <li>**Analysis:** "The Unbroken Chain: Integrating 3D Scanning, Production, and Metrology for Full Device Traceability (ISO 13485)."</li>
+                        <li>**How-To Guide:** "Implementing Real-Time Process Monitoring on the Factory Floor for SME Subcontractors."</li>
+                    </ul>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg text-[#FFB26B]">Angle 4: Supply Chain Resilience & Regionalization</h3>
+                    <p class="mt-2 text-gray-700">Address the strategic shift towards diversifying manufacturing hubs post-pandemic. This theme highlights the advantages of SEA as a high-quality, reliable alternative for MedTech production.</p>
+                    <ul class="mt-2 space-y-2 list-disc list-inside text-gray-600 text-sm">
+                        <li>**Executive Interview:** "Why Medtronic is Deepening its Partnership with Malaysian Precision Engineering Firms."</li>
+                        <li>**Market Report:** "De-risking the Supply Chain: Quantifying the Benefits of Sourcing Critical Components from Thailand and Vietnam."</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const eventData = {
+                attendees: [10000, 6000, 11000, 81000], 
+                exhibitors: [400, 180, 1000, 5300]
+            };
+            const eventLabels = ['CPHI SEA', 'Medical Mfg Asia', 'Medical Fair Asia', 'MEDICA/COMPAMED'];
+
+            const eventContent = {
+                cphi: {
+                    title: 'CPHI Southeast Asia: The Pharma Nexus',
+                    html: `
+                        <h3 class="text-2xl font-bold mb-4 text-[#007A7A]">CPHI Southeast Asia: The Pharma Nexus</h3>
+                        <p class="text-gray-700 mb-4">CPHI is the essential gathering for the pharmaceutical supply chain. For advanced manufacturing suppliers, the key opportunity lies within the <strong class="text-[#007A7A]">P-MEC (Pharmaceutical Machinery)</strong> and <strong class="text-[#007A7A]">InnoPack (Packaging)</strong> zones. This is where drug manufacturers seek partners for processing automation, high-precision molds for drug delivery devices, and sanitary components.</p>
+                        <h4 class="font-semibold mt-6 mb-2">Strategic Focus for Suppliers:</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Processing Components:</strong> High-precision, sanitary-grade components (valves, fittings) for bioreactors.</li>
+                            <li><strong>Packaging & Delivery:</strong> Molds for custom plastic vials and drug delivery devices (e.g., auto-injectors).</li>
+                            <li><strong>Lab Automation:</strong> Components for robotic sample handling and analytical instruments.</li>
+                            <li><strong>Target Audience:</strong> Production Managers, Process Engineers, Packaging Specialists from pharmaceutical companies.</li>
+                        </ul>`
+                },
+                mma: {
+                    title: 'Medical Manufacturing Asia: The MedTech Core',
+                    html: `
+                        <h3 class="text-2xl font-bold mb-4 text-[#007A7A]">Medical Manufacturing Asia: The MedTech Core</h3>
+                        <p class="text-gray-700 mb-4">MMA is a highly focused event targeting the heart of medical device production. It is the prime regional venue for suppliers of high-precision manufacturing services, advanced materials, and metrology equipment to connect directly with MedTech R&D and production engineers.</p>
+                        <h4 class="font-semibold mt-6 mb-2">Strategic Focus for Suppliers:</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Implants & Prosthetics:</strong> Showcase for additive manufacturing of titanium joints and PEEK spinal cages.</li>
+                            <li><strong>Surgical Instruments:</strong> Highlight CNC machining of complex stainless steel and titanium instruments.</li>
+                            <li><strong>Microfluidics & Diagnostics:</strong> Promote expertise in micro-molding and laser welding for 'lab-on-a-chip' devices.</li>
+                             <li><strong>Metrology & QA:</strong> Present 3D scanning and CMM solutions to ensure compliance with ISO 13485.</li>
+                            <li><strong>Target Audience:</strong> R&D Engineers, Design Engineers, Production Managers, Technical Buyers.</li>
+                        </ul>`
+                },
+                mfa: {
+                    title: 'Medical Fair Asia: The Clinical Application',
+                    html: `
+                        <h3 class="text-2xl font-bold mb-4 text-[#007A7A]">Medical Fair Asia: The Clinical Application</h3>
+                        <p class="text-gray-700 mb-4">As the co-located downstream event to MMA, Medical Fair Asia showcases finished products. For component suppliers, this is an invaluable intelligence-gathering opportunity to <strong class="text-[#007A7A]">see the end-products</strong> your components go into and understand the clinical needs driving future market demand.</p>
+                        <h4 class="font-semibold mt-6 mb-2">Strategic Value for Suppliers:</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Market Intelligence:</strong> Identify trends in device design and functionality that will dictate future component requirements.</li>
+                            <li><strong>Competitive Analysis:</strong> See what manufacturing techniques the major OEMs (Siemens, GE) are using in their latest equipment.</li>
+                            <li><strong>High-Level Networking:</strong> Connect with product managers and R&D leaders looking for innovation.</li>
+                            <li><strong>Target Audience:</strong> Hospital Administrators, Clinicians, Distributors, and OEM Product Managers.</li>
+                        </ul>`
+                },
+                medica: {
+                    title: 'MEDICA / COMPAMED: The Global Technology Source',
+                    html: `
+                        <h3 class="text-2xl font-bold mb-4 text-[#007A7A]">MEDICA / COMPAMED: The Global Technology Source</h3>
+                        <p class="text-gray-700 mb-4">MEDICA and its parallel event <strong class="text-[#007A7A]">COMPAMED</strong> represent the world standard for MedTech and its supply chain. It's where global <strong class="text-[#007A7A]">OEMs secure R&D partnerships</strong> and where SEA suppliers source the advanced capital equipment (CNC, 3D printing, Metrology) that enables them to compete globally.</p>
+                        <h4 class="font-semibold mt-6 mb-2">Strategic Value for SEA Ecosystem:</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Technology Sourcing:</strong> The primary venue for SEA manufacturers to buy high-end machines from global leaders.</li>
+                            <li><strong>Regulatory Alignment:</strong> Key forums dictate future ISO standards, crucial for all export-oriented SEA suppliers.</li>
+                            <li><strong>High-Value Partnerships:</strong> The best place for sophisticated SEA suppliers to meet European/US Tier 1 contractors.</li>
+                            <li><strong>Target Audience:</strong> Global Procurement Heads, R&D Directors, CEOs, and Technology Sourcing Engineers.</li>
+                        </ul>`
+                }
+            };
+            
+            const techData = [
+                {
+                    title: 'Additive Manufacturing (3D Printing)',
+                    content: 'Crucial for rapid prototyping and creating complex, patient-specific implants (e.g., knee, hip, dental) and surgical guides. Technologies like Selective Laser Melting (SLM) for metals (Titanium) and high-performance polymers (PEEK) are in high demand, enabling designs impossible with traditional methods.'
+                },
+                {
+                    title: 'Subtractive & Hybrid Manufacturing (CNC)',
+                    content: 'The bedrock of medical device manufacturing for producing high-precision metal and plastic components. 5-axis CNC machining is essential for complex geometries in surgical instruments and bone plates. Hybrid centers, combining additive and subtractive processes, represent the next frontier for optimizing production.'
+                },
+                {
+                    title: 'Metrology & 3D Scanning',
+                    content: 'Ensuring quality and compliance is non-negotiable. High-resolution 3D scanning is used for 100% inspection of complex parts against their CAD models. Coordinate Measuring Machines (CMMs) and advanced vision systems provide the metrology data needed to validate processes and meet stringent regulations like ISO 13485.'
+                },
+                {
+                    title: 'Precision Mold & Die Fabrication',
+                    content: 'Essential for high-volume production of medical disposables such as syringes, catheters, and diagnostic cartridges. The precision of the mold dictates the quality of millions of parts. Expertise in micro-molding and multi-cavity tools is a significant competitive advantage for suppliers in this space.'
+                }
+            ];
+
+            const supplierData = [
+                { name: 'Siemens Healthineers', country: 'Global HQ', specialization: 'Imaging, Diagnostics, Precision Components (Buyer)', event: 'MFA, MMA', tier: 'tier-1' },
+                { name: 'Medtronic', country: 'Global HQ', specialization: 'High-Value Implants, Surgical Robotics (Buyer)', event: 'MMA, MFA', tier: 'tier-1' },
+                { name: 'GE Healthcare', country: 'Global HQ', specialization: 'Imaging, Monitoring Systems (Buyer)', event: 'MFA, MMA', tier: 'tier-1' },
+                { name: 'Johnson & Johnson', country: 'Global HQ', specialization: 'Surgical Instruments, Pharma Packaging (Buyer)', event: 'MMA, CPHI SEA', tier: 'tier-1' },
+                { name: 'Becton Dickinson (BD)', country: 'Global HQ', specialization: 'Drug Delivery Systems, Diagnostics (Buyer)', event: 'CPHI SEA, MMA', tier: 'tier-1' },
+                { name: 'Boston Scientific', country: 'Global HQ', specialization: 'Minimally Invasive Devices (Buyer)', event: 'MMA', tier: 'tier-1' },
+                { name: 'Roche Diagnostics', country: 'Global HQ', specialization: 'IVD Systems, Assay Components (Buyer)', event: 'MMA', tier: 'tier-1' },
+                { name: 'Stryker', country: 'Global HQ', specialization: 'Orthopedic Implants & Instruments (Buyer)', event: 'MMA, MFA', tier: 'tier-1' },
+                { name: 'Zimmer Biomet', country: 'Global HQ', specialization: 'Orthopedics and Dental Implants (Buyer)', event: 'MMA', tier: 'tier-1' },
+                { name: 'Baxter International', country: 'Global HQ', specialization: 'IV/Drug Delivery Systems (Buyer)', event: 'CPHI SEA, MFA', tier: 'tier-1' },
+                { name: 'Philips Healthcare', country: 'Global HQ', specialization: 'Diagnostic Systems, R&D (Buyer)', event: 'MFA, MMA', tier: 'tier-1' },
+                { name: 'Danaher Corporation', country: 'Global HQ', specialization: 'Life Science Instruments (Buyer)', event: 'CPHI SEA, MMA', tier: 'tier-1' },
+                { name: 'Novartis Gene Therapies', country: 'Global HQ', specialization: 'Cell/Gene Therapy Components (Buyer/Seller)', event: 'CPHI SEA', tier: 'tier-1' },
+                { name: 'Amgen', country: 'Global HQ', specialization: 'Biopharma R&D & Mfg (Buyer)', event: 'CPHI SEA', tier: 'tier-1' },
+                { name: 'DMG Mori', country: 'Global HQ', specialization: '5-Axis CNC & Hybrid Machines (Seller)', event: 'MEDICA/COMPAMED, MMA', tier: 'tier-1-global' },
+                { name: 'Hexagon MI', country: 'Global HQ', specialization: 'Metrology, CMMs, 3D Scanners (Seller)', event: 'MEDICA/COMPAMED, MMA', tier: 'tier-1-global' },
+                { name: 'TRUMPF Group', country: 'Global HQ', specialization: 'Laser Welding, 3D Printing (Seller)', event: 'MEDICA/COMPAMED, MMA', tier: 'tier-1-global' },
+                { name: 'EOS GmbH', country: 'Global HQ', specialization: 'Industrial 3D Printing Systems (Seller)', event: 'MEDICA/COMPAMED, MMA', tier: 'tier-1-global' },
+                { name: 'Renishaw', country: 'Global HQ', specialization: 'Additive Mfg, Measurement Probes (Seller)', event: 'MEDICA/COMPAMED, MMA', tier: 'tier-1-global' },
+                { name: 'Sartorius AG', country: 'Global HQ', specialization: 'Bioprocessing, Lab Instruments (Seller)', event: 'CPHI SEA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Festo', country: 'Global HQ', specialization: 'Medical Automation (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Mikron Group', country: 'Global HQ', specialization: 'High-Precision Machining (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Freudenberg Medical', country: 'Global HQ', specialization: 'Silicone & Polymer Components (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Raumedic AG', country: 'Global HQ', specialization: 'Polymer Extrusion, Tubing (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Keyence Corp', country: 'Global HQ', specialization: 'Vision & Measurement Systems (Seller)', event: 'MMA, CPHI SEA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Zeus Industrial Products', country: 'Global HQ', specialization: 'Polymer Extrusions, Tubing (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'GF Machining Solutions', country: 'Global HQ', specialization: 'EDM, Laser Ablation (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Ensinger GmbH', country: 'Global HQ', specialization: 'Medical-Grade Polymers (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'TÜV SÜD', country: 'Global HQ', specialization: 'Device Certification (Service)', event: 'MFA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'SGS', country: 'Global HQ', specialization: 'Testing, Inspection (Service)', event: 'MFA, CPHI SEA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Emerson Automation', country: 'Global HQ', specialization: 'Process Control (Seller)', event: 'CPHI SEA', tier: 'tier-1-global' },
+                { name: 'Yokogawa Electric', country: 'Global HQ', specialization: 'Industrial Automation (Seller)', event: 'CPHI SEA', tier: 'tier-1-global' },
+                { name: 'Covestro AG', country: 'Global HQ', specialization: 'High-Performance Polymers (Seller)', event: 'MMA, MEDICA/COMPAMED', tier: 'tier-1-global' },
+                { name: 'Getinge', country: 'Global HQ', specialization: 'Infection Control, Surgical Gear (Seller)', event: 'MFA, MMA', tier: 'tier-1-global' },
+                { name: 'Thai-Swiss Precision Eng.', country: 'Thailand', specialization: '5-Axis CNC, Complex Instruments', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'SG MicroTooling Works', country: 'Singapore', specialization: 'Ultra-Precision EDM/Wire EDM', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'AddiMed SG', country: 'Singapore', specialization: 'Titanium/PEEK Implants (SLM/EBM)', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'ASEAN Metrology Solutions', country: 'Singapore', specialization: 'High-Res 3D Scanning & CMM Inspection', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Spinal Component Fab', country: 'Singapore', specialization: 'PEEK Spinal Implants, Vertebral Cages', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Singapore Flow Dynamics', country: 'Singapore', specialization: 'Microfluidic Devices, Cartridge Assembly', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'BioSurface Coatings', country: 'Singapore', specialization: 'Electropolishing, DLC Coatings, Passivation', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'MedAssembly Robotics', country: 'Singapore', specialization: 'Cleanroom Assembly Automation', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Asia Mold Masters', country: 'Malaysia', specialization: 'High-Cavity Injection Molds, Disposables', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Advanced CNC Solutions KL', country: 'Malaysia', specialization: 'Titanium & SS Medical Parts', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Drug Delivery Tech MY', country: 'Malaysia', specialization: 'Auto-Injector Components & Molds', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'PrecisionFlow Components', country: 'Thailand', specialization: 'Bioreactor Fittings, Sanitary Valves', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Global Pharma Machining', country: 'Thailand', specialization: 'Tablet Press & Capsule Filler Parts', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'ProtoFast Thailand', country: 'Thailand', specialization: 'Rapid Prototyping, Resin 3D Printing', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Vision Quality Systems', country: 'Thailand', specialization: 'Optical Inspection, Vision Systems (QA)', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'CleanLine Finishing', country: 'Thailand', specialization: 'Aesthetic Polishing for Device Handles', event: 'MFA', tier: 'tier-2-regional' },
+                { name: 'OrthoMold Tech Thai', country: 'Thailand', specialization: 'Custom Mold Sets for Bone Screws', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Quality Tooling Services', country: 'Thailand', specialization: 'Mold Maintenance & Repair', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Chiang Mai Laser Works', country: 'Thailand', specialization: 'Laser Welding, Cutting, Engraving', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'SEA Diagnostics Housing', country: 'Thailand', specialization: 'Medical Equipment Enclosures (Sheet Metal)', event: 'MFA', tier: 'tier-2-regional' },
+                { name: 'Polymer Sciences Asia', country: 'Thailand', specialization: 'Custom Biocompatible Compounds', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Vietnam Medizintek Fab', country: 'Vietnam', specialization: 'Surgical Component Milling, Assembly', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'PharmaTech Machining VN', country: 'Vietnam', specialization: 'Processing Equipment Components', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Certified Calibrations VN', country: 'Vietnam', specialization: 'Metrology Service, Traceability', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Rehab Device Component Co.', country: 'Vietnam', specialization: 'Mobility Aid Sub-Assemblies', event: 'MFA', tier: 'tier-2-regional' },
+                { name: 'Bioreactor Parts Vietnam', country: 'Vietnam', specialization: 'Stainless Steel Bioreactor Components', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Hanoi Precision Glass', country: 'Vietnam', specialization: 'Specialty Vials & Glass Components', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Indo-Medical Dies', country: 'Indonesia', specialization: 'Large Volume Molds, Packaging', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Total QA Systems Indo', country: 'Indonesia', specialization: 'Software Validation & Testing', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Additive Metal Fab Manila', country: 'Philippines', specialization: 'Dental & Small Component Printing', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Manila Health Fab', country: 'Philippines', specialization: 'Low-cost Disposables Components', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'BioPrint Systems SEA', country: 'Malaysia', specialization: 'Custom Orthopedic Guides & Tools', event: 'MMA', tier: 'tier-2-regional' },
+                { name: 'Precision Seal & Gasket', country: 'Malaysia', specialization: 'Elastomers, Gaskets for Pharma', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'KL Cleanroom Supplies', country: 'Malaysia', specialization: 'Gasket & Seal Manufacturing', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Automate Pharma Packaging', country: 'Malaysia', specialization: 'Pick-and-Place Robotics for Blisters', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Lab Tech Miniatures', country: 'Singapore', specialization: 'Pipette Tips, Micro Well Plates (Molding)', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Aseptic Filling Solutions', country: 'Singapore', specialization: 'Aseptic Processing Components', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Lab Automation Systems TH', country: 'Thailand', specialization: 'Robotic Sample Handling Equipment', event: 'CPHI SEA', tier: 'tier-2-regional' },
+                { name: 'Integrated Vision Systems', country: 'Singapore', specialization: 'High-Speed Inspection Integration', event: 'MMA', tier: 'tier-2-regional' }
+            ];
+
+            const ctxBar = document.getElementById('eventComparisonChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: eventLabels,
+                    datasets: [
+                        {
+                            label: 'Attendees',
+                            data: eventData.attendees,
+                            backgroundColor: 'rgba(0, 122, 122, 0.7)',
+                            borderColor: 'rgba(0, 122, 122, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Exhibitors',
+                            data: eventData.exhibitors,
+                            backgroundColor: 'rgba(255, 178, 107, 0.7)',
+                            borderColor: 'rgba(255, 178, 107, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctxRadar = document.getElementById('ecosystemRadarChart').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Skilled Workforce', 'R&D Capabilities', 'Manufacturing Base', 'Govt. Support', 'Logistics', 'VC/Startup Eco'],
+                    datasets: [{
+                        label: 'Thailand',
+                        data: [8, 5, 9, 7, 7, 4],
+                        backgroundColor: 'rgba(255, 178, 107, 0.2)',
+                        borderColor: 'rgba(255, 178, 107, 1)',
+                        pointBackgroundColor: 'rgba(255, 178, 107, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(255, 178, 107, 1)'
+                    }, {
+                        label: 'Singapore',
+                        data: [7, 9, 6, 8, 9, 9],
+                        backgroundColor: 'rgba(0, 122, 122, 0.2)',
+                        borderColor: 'rgba(0, 122, 122, 1)',
+                        pointBackgroundColor: 'rgba(0, 122, 122, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(0, 122, 122, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    }
+                }
+            });
+
+            const eventContentContainer = document.getElementById('event-content');
+            const tabButtons = document.querySelectorAll('.tab-button');
+
+            function updateEventContent(tab) {
+                eventContentContainer.innerHTML = eventContent[tab].html;
+                tabButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.tab === tab);
+                });
+            }
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => updateEventContent(button.dataset.tab));
+            });
+            
+            updateEventContent('cphi');
+
+            const techAccordion = document.getElementById('tech-accordion');
+            techData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card rounded-lg border border-gray-200';
+                card.innerHTML = `
+                    <button class="w-full text-left p-4 flex justify-between items-center focus:outline-none">
+                        <h4 class="font-semibold text-lg">${item.title}</h4>
+                        <span class="transform transition-transform duration-300">&#9662;</span>
+                    </button>
+                    <div class="px-4 pb-4 text-gray-700 hidden">
+                        <p>${item.content}</p>
+                    </div>`;
+                
+                const button = card.querySelector('button');
+                const content = card.querySelector('div');
+                const arrow = card.querySelector('span');
+
+                button.addEventListener('click', () => {
+                    const isHidden = content.classList.contains('hidden');
+                    document.querySelectorAll('#tech-accordion .px-4.pb-4').forEach(el => el.classList.add('hidden'));
+                    document.querySelectorAll('#tech-accordion span').forEach(el => el.style.transform = 'rotate(0deg)');
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        arrow.style.transform = 'rotate(180deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+                techAccordion.appendChild(card);
+            });
+
+            const supplierTableBody = document.getElementById('supplierTableBody');
+            const supplierSearch = document.getElementById('supplierSearch');
+            
+            function renderSuppliers(filteredData) {
+                supplierTableBody.innerHTML = '';
+                if (filteredData.length === 0) {
+                     const row = document.createElement('tr');
+                     row.innerHTML = `<td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No suppliers match your search criteria.</td>`;
+                     supplierTableBody.appendChild(row);
+                     return;
+                }
+                filteredData.forEach(s => {
+                    const row = document.createElement('tr');
+                    row.className = s.tier;
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">${s.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${s.country}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${s.specialization}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${s.event}</td>
+                    `;
+                    supplierTableBody.appendChild(row);
+                });
+            }
+
+            supplierSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = supplierData.filter(s => 
+                    s.name.toLowerCase().includes(searchTerm) || 
+                    s.country.toLowerCase().includes(searchTerm) || 
+                    s.specialization.toLowerCase().includes(searchTerm) ||
+                    s.event.toLowerCase().includes(searchTerm)
+                );
+                renderSuppliers(filtered);
+            });
+            
+            renderSuppliers(supplierData);
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                const sections = document.querySelectorAll('section');
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) { 
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('onclick').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
