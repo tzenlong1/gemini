@@ -1,9 +1,346 @@
 <div id="santa-scene-container" style="width: 100%; max-width: 800px; height: 500px; margin: 0 auto; position: relative; overflow: hidden; background-color: #050510; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <!-- Loading Overlay -->
     <div id="scene-loading" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-family: sans-serif;">
         <p>Summoning the North Pole...</p>
     </div>
 </div>
+
 <script type="module">
     import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
-    // (JS content truncated for brevity)
+
+    // --- Setup ---
+    const container = document.getElementById('santa-scene-container');
+    const loadingScreen = document.getElementById('scene-loading');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050515);
+    scene.fog = new THREE.FogExp2(0x050515, 0.02); // Atmospheric depth
+
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 200);
+    camera.position.set(0, 5, 15);
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // --- Lighting ---
+    // Moonlight
+    const moonLight = new THREE.DirectionalLight(0xaaccff, 0.6);
+    moonLight.position.set(-10, 20, -10);
+    moonLight.castShadow = true;
+    moonLight.shadow.camera.left = -20;
+    moonLight.shadow.camera.right = 20;
+    moonLight.shadow.camera.top = 20;
+    moonLight.shadow.camera.bottom = -20;
+    scene.add(moonLight);
+
+    // Ambient warmth
+    scene.add(new THREE.AmbientLight(0x222244, 0.4));
+
+    // Magical Sled Light (Point Light)
+    const sledLight = new THREE.PointLight(0xffaa00, 1, 10);
+    sledLight.position.set(0, 2, 0);
+    // We'll attach this to the sled later
+
+    // --- Materials ---
+    const matRed = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3 });
+    const matGreen = new THREE.MeshStandardMaterial({ color: 0x006600, roughness: 0.4 });
+    const matGold = new THREE.MeshStandardMaterial({ color: 0xffcc00, metalness: 0.6, roughness: 0.2 });
+    const matWood = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.9 });
+    const matSkin = new THREE.MeshStandardMaterial({ color: 0xffd1aa, roughness: 0.4 });
+    const matWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+    const matBrown = new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.6 });
+    const matNose = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x550000, roughness: 0.1 });
+
+    // --- Builders ---
+
+    // 1. Build Sled
+    function createSled() {
+        const sledGroup = new THREE.Group();
+
+        // Runners
+        const runnerGeo = new THREE.TorusGeometry(1.5, 0.05, 8, 50, Math.PI / 1.5);
+        const runnerL = new THREE.Mesh(runnerGeo, matGold);
+        runnerL.rotation.x = Math.PI / 2;
+        runnerL.rotation.y = Math.PI / 2;
+        runnerL.position.set(-0.6, 0, 0);
+        
+        const runnerR = runnerL.clone();
+        runnerR.position.set(0.6, 0, 0);
+
+        sledGroup.add(runnerL, runnerR);
+
+        // Base
+        const baseGeo = new THREE.BoxGeometry(1.4, 0.1, 2.5);
+        const base = new THREE.Mesh(baseGeo, matWood);
+        base.position.y = 0.2;
+        sledGroup.add(base);
+
+        // Body Walls
+        const sideGeo = new THREE.BoxGeometry(0.1, 0.8, 2);
+        const sideL = new THREE.Mesh(sideGeo, matRed);
+        sideL.position.set(-0.65, 0.6, -0.2);
+        
+        const sideR = sideL.clone();
+        sideR.position.set(0.65, 0.6, -0.2);
+
+        const backGeo = new THREE.BoxGeometry(1.4, 1.0, 0.1);
+        const back = new THREE.Mesh(backGeo, matRed);
+        back.position.set(0, 0.7, -1.15);
+        // Curve the back top
+        back.rotation.x = -0.2;
+
+        sledGroup.add(sideL, sideR, back);
+
+        return sledGroup;
+    }
+
+    // 2. Build Elf
+    function createElf() {
+        const elfGroup = new THREE.Group();
+
+        // Body
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.6, 12), matGreen);
+        body.position.y = 0.3;
+        elfGroup.add(body);
+
+        // Head
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), matSkin);
+        head.position.y = 0.75;
+        elfGroup.add(head);
+
+        // Hat
+        const hat = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.6, 16), matGreen);
+        hat.position.y = 1.1;
+        // Tipping the hat back slightly
+        hat.rotation.x = -0.2;
+        elfGroup.add(hat);
+
+        // Pom Pom
+        const pom = new THREE.Mesh(new THREE.SphereGeometry(0.06), matWhite);
+        pom.position.set(0, 1.4, 0.06);
+        elfGroup.add(pom);
+
+        // Eyes
+        const eyeGeo = new THREE.SphereGeometry(0.03);
+        const eyeMat = new THREE.MeshBasicMaterial({color: 0x000000});
+        const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+        eyeL.position.set(-0.08, 0.8, 0.2);
+        const eyeR = eyeL.clone();
+        eyeR.position.set(0.08, 0.8, 0.2);
+        elfGroup.add(eyeL, eyeR);
+
+        return elfGroup;
+    }
+
+    // 3. Build Reindeer (Simplified Stylized)
+    function createReindeer() {
+        const deerGroup = new THREE.Group();
+
+        // Body Group
+        const bodyGroup = new THREE.Group();
+        bodyGroup.position.y = 0.5;
+        deerGroup.add(bodyGroup);
+
+        // Main Cylinder Body
+        const mainBody = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 8), matBrown);
+        mainBody.rotation.x = Math.PI / 2;
+        bodyGroup.add(mainBody);
+
+        // Front Cap (Sphere)
+        const frontCap = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), matBrown);
+        frontCap.position.z = 0.4;
+        bodyGroup.add(frontCap);
+
+        // Back Cap (Sphere)
+        const backCap = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), matBrown);
+        backCap.position.z = -0.4;
+        bodyGroup.add(backCap);
+
+
+        // Neck
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.5), matBrown);
+        neck.position.set(0, 0.9, 0.5);
+        neck.rotation.x = -0.5;
+        deerGroup.add(neck);
+
+        // Head
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.3, 0.4), matBrown);
+        head.position.set(0, 1.2, 0.7);
+        deerGroup.add(head);
+
+        // Rudolph Nose
+        const nose = new THREE.Mesh(new THREE.SphereGeometry(0.08), matNose);
+        nose.position.set(0, 1.15, 0.95);
+        deerGroup.add(nose);
+
+        // Antlers (Simple Y shape logic using cylinders)
+        const antMat = new THREE.MeshStandardMaterial({color: 0xf0e68c});
+        const antL = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4), antMat);
+        antL.position.set(-0.15, 1.5, 0.6);
+        antL.rotation.z = 0.5;
+        
+        const antR = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4), antMat);
+        antR.position.set(0.15, 1.5, 0.6);
+        antR.rotation.z = -0.5;
+        
+        deerGroup.add(antL, antR);
+
+        // Legs (Static flying pose)
+        const legGeo = new THREE.CylinderGeometry(0.08, 0.06, 0.6);
+        const legFL = new THREE.Mesh(legGeo, matBrown);
+        legFL.position.set(-0.2, 0.2, 0.5);
+        legFL.rotation.x = 0.4; // Tucked back
+
+        const legBL = new THREE.Mesh(legGeo, matBrown);
+        legBL.position.set(-0.2, 0.2, -0.5);
+        legBL.rotation.x = -0.4; // Tucked back
+
+        const legFR = legFL.clone();
+        legFR.position.set(0.2, 0.2, 0.5);
+
+        const legBR = legBL.clone();
+        legBR.position.set(0.2, 0.2, -0.5);
+
+        deerGroup.add(legFL, legBL, legFR, legBR);
+
+        return deerGroup;
+    }
+
+    // --- Scene Assembly ---
+    
+    // Main Assembly Group
+    const flyingGroup = new THREE.Group();
+    scene.add(flyingGroup);
+
+    const sled = createSled();
+    flyingGroup.add(sled);
+
+    const elf = createElf();
+    elf.position.set(0, 0.5, -0.5);
+    sled.add(elf);
+    
+    // Add light to sled
+    sled.add(sledLight);
+
+    const reindeer = createReindeer();
+    reindeer.position.set(0, 0, 2.5); // Ahead of sled
+    flyingGroup.add(reindeer);
+
+    // Reins (Lines)
+    const reinMat = new THREE.LineBasicMaterial({ color: 0xaa4400 });
+    const reinGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-0.2, 0.8, 0.5), // Sled hand position approx
+        new THREE.Vector3(-0.15, 1.1, 2.5) // Reindeer neck
+    ]);
+    const reinL = new THREE.Line(reinGeo, reinMat);
+    const reinR = reinL.clone();
+    reinR.position.x = 0.4; // Offset for right side
+    sled.add(reinL); // Add to sled so it moves with it (rough approx)
+    sled.add(reinR);
+
+
+    // --- Environment: Snow & Ground ---
+
+    // Snow Particles
+    const snowCount = 800;
+    const snowGeo = new THREE.BufferGeometry();
+    const snowPos = [];
+    for(let i=0; i<snowCount; i++){
+        snowPos.push(
+            (Math.random() - 0.5) * 40,
+            Math.random() * 20,
+            (Math.random() - 0.5) * 40
+        );
+    }
+    snowGeo.setAttribute('position', new THREE.Float32BufferAttribute(snowPos, 3));
+    const snowMat = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.15,
+        transparent: true,
+        opacity: 0.8
+    });
+    const snowSystem = new THREE.Points(snowGeo, snowMat);
+    scene.add(snowSystem);
+
+    // Ground (Simulating a hill below)
+    const groundGeo = new THREE.PlaneGeometry(100, 100, 32, 32);
+    // Add some waviness
+    const pos = groundGeo.attributes.position;
+    for(let i=0; i<pos.count; i++){
+        const z = pos.getZ(i);
+        const x = pos.getX(i);
+        pos.setZ(i, z + Math.sin(x * 0.1) * 2 + Math.cos(z * 0.1) * 2);
+    }
+    groundGeo.computeVertexNormals();
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -10;
+    scene.add(ground);
+
+
+    // --- Animation ---
+    
+    loadingScreen.style.display = 'none'; // Ready
+    
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        const time = clock.getElapsedTime();
+        const delta = clock.getDelta();
+
+        // 1. Fly the Group in a Circle
+        const radius = 8;
+        const speed = 0.8;
+        const angle = time * speed;
+
+        flyingGroup.position.x = Math.cos(angle) * radius;
+        flyingGroup.position.z = Math.sin(angle) * radius - 5; // Push back a bit
+        
+        // Bob up and down
+        flyingGroup.position.y = Math.sin(time * 2) * 0.5;
+
+        // Rotate to face forward along the path
+        // Tangent to circle is angle + PI/2. 
+        // We actually need to rotate the group around Y.
+        flyingGroup.rotation.y = -angle;
+
+        // Tilt banking (lean into the turn)
+        flyingGroup.rotation.z = -0.3; // Constant bank for circular path
+        
+        // 2. Animate Snow
+        const positions = snowSystem.geometry.attributes.position.array;
+        for(let i = 1; i < positions.length; i += 3) {
+            positions[i] -= 0.05; // Fall down
+            if (positions[i] < -5) {
+                positions[i] = 15; // Reset to top
+            }
+        }
+        snowSystem.geometry.attributes.position.needsUpdate = true;
+
+        // 3. Camera Follow Logic (Subtle movement)
+        camera.position.x += (flyingGroup.position.x * 0.3 - camera.position.x) * 0.05;
+        camera.lookAt(flyingGroup.position);
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // --- Resize ---
+    window.addEventListener('resize', () => {
+        if (!container) return;
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    });
+
 </script>
